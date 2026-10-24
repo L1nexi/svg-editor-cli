@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-Hans" xml:lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Lab1 Phase 1 · SVG 编辑器（CLI）任务分析</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{
+    --accent:#2f6fed; --amber:#f5a623;
+    --text:#232936; --border:#dde3ec; --bg:#eef0f4;
+    --chip:#eef1f6;
+    --term-text:#d9e4f1;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;background:var(--bg)}
+  body{
+    max-width:960px;margin:28px auto 72px;padding:46px 58px 64px;
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+    box-shadow:0 2px 18px rgba(28,39,64,.07);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    color:var(--text);font-size:16px;line-height:1.85;
+  }
+  h1{font-size:1.72em;line-height:1.4;margin:.2em 0 1em;padding-bottom:.45em;border-bottom:3px solid var(--accent)}
+  h2{font-size:1.32em;margin:2.2em 0 .9em;padding:.12em 0 .12em .65em;border-left:5px solid var(--accent);background:linear-gradient(90deg,#eef3ff,rgba(238,243,255,0) 88%);scroll-margin-top:24px}
+  h3{font-size:1.1em;margin:1.6em 0 .6em;color:#1d2b4f}
+  p{margin:.7em 0}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  strong{color:#101623}
+  ul,ol{padding-left:1.6em}
+  li{margin:.28em 0}
+  hr{border:none;border-top:1px solid var(--border);margin:2.2em 0}
+  nav#TOC{background:#eef3ff;border:1px solid #d7e2fb;border-radius:10px;padding:14px 26px 14px 8px;margin:0 0 2em;font-size:.93em}
+  nav#TOC::before{content:"目录";display:block;font-weight:700;color:#274b9f;padding-left:18px;margin-bottom:.2em}
+  nav#TOC ul{list-style:none;margin:.2em 0;padding-left:1.35em}
+  nav#TOC>ul{padding-left:18px}
+  nav#TOC li{margin:.15em 0}
+  nav#TOC a{color:#274b9f}
+  nav#TOC a:hover{text-decoration:underline}
+  table{border-collapse:collapse;width:100%;margin:1em 0 1.4em;font-size:.92em;line-height:1.6}
+  th,td{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}
+  th{background:#eef3ff;color:#1d2b4f;white-space:nowrap}
+  tbody tr:nth-child(even){background:#fafbfd}
+  td code,th code{overflow-wrap:anywhere;white-space:normal}
+  code{font-family:"Cascadia Mono",Consolas,Menlo,"Microsoft YaHei",monospace;font-size:.88em;background:var(--chip);border-radius:4px;padding:1px 5px;white-space:normal}
+  pre{background:#f6f8fa;border:1px solid var(--border);border-radius:8px;padding:13px 16px;overflow-x:auto;line-height:1.55}
+  pre code{background:none;padding:0;font-size:.9em;white-space:pre}
+  pre.text{background:linear-gradient(180deg,#101a2e,#0c1425);border-color:#22314f;color:var(--term-text)}
+  pre.text::before{content:"● ● ●";display:block;color:#42506b;font-size:10px;letter-spacing:4px;line-height:1;margin-bottom:12px}
+  pre.text code{color:inherit}
+  blockquote{margin:1.2em 0;padding:10px 18px;border-left:4px solid var(--amber);background:#fffaf0;border-radius:0 8px 8px 0;color:#6d5a33}
+  blockquote p{margin:.3em 0}
+  details{background:#f8fafd;border:1px dashed #c9d4e6;border-radius:10px;padding:10px 16px;margin:1.2em 0}
+  details[open]{border-style:solid;background:#fbfcff}
+  summary{cursor:pointer;font-weight:600;color:var(--accent);user-select:none;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸";display:inline-block;margin-right:6px;transition:transform .18s;color:var(--amber);font-size:.9em}
+  details[open] summary::before{transform:rotate(90deg)}
+  details svg{max-width:100%;height:auto;display:block;margin:14px auto 6px}
+  .float-btns{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:9px;z-index:99}
+  .float-btns button{font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--text);box-shadow:0 2px 10px rgba(28,39,64,.14);cursor:pointer}
+  .float-btns button:hover{border-color:var(--accent);color:var(--accent)}
+  @media (max-width:760px){
+    body{margin:0;border-radius:0;padding:26px 18px 48px;font-size:15px}
+    th{white-space:normal}
+  }
+  @media print{
+    html,body{background:#fff}
+    body{max-width:none;margin:0;border:none;box-shadow:none;border-radius:0;padding:0}
+    nav#TOC{display:none}
+    .float-btns{display:none}
+    h2{page-break-after:avoid}
+    table,pre,details,blockquote{page-break-inside:avoid}
+  }
+  </style>
+</head>
+<body>
+<script>
+window.addEventListener('DOMContentLoaded',function(){
+  var ds=[].slice.call(document.querySelectorAll('details'));
+  ds.forEach(function(d){d.open=true;});
+  var wrap=document.createElement('div');wrap.className='float-btns';
+  var toggle=document.createElement('button');var open=true;
+  function paint(){toggle.textContent=open?'🎨 收起全部预览':'🎨 展开全部预览';}
+  toggle.onclick=function(){open=!open;ds.forEach(function(d){d.open=open;});paint();};
+  paint();
+  var toc=document.createElement('button');toc.textContent='☰ 回到目录';
+  toc.onclick=function(){var n=document.getElementById('TOC');if(n)n.scrollIntoView({behavior:'smooth'});};
+  wrap.appendChild(toggle);wrap.appendChild(toc);document.body.appendChild(wrap);
+});
+</script>
+<header id="title-block-header">
+<h1 class="title">Lab1 Phase 1 · SVG 编辑器（CLI）任务分析</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#lab1-phase-1-svg-编辑器cli任务分析"
+id="toc-lab1-phase-1-svg-编辑器cli任务分析">Lab1 Phase 1 · SVG
+编辑器（CLI）任务分析</a>
+<ul>
+<li><a href="#任务一句话概述" id="toc-任务一句话概述">1.
+任务一句话概述</a></li>
+<li><a href="#任务展开需求意图与能力培养"
+id="toc-任务展开需求意图与能力培养">2.
+任务展开：需求、意图与能力培养</a></li>
+<li><a href="#要求分析" id="toc-要求分析">3. 要求分析</a></li>
+<li><a href="#前置知识技术选型与-open-questions"
+id="toc-前置知识技术选型与-open-questions">4. 前置知识、技术选型与 open
+questions</a></li>
+<li><a href="#任务交付物" id="toc-任务交付物">5. 任务交付物</a></li>
+<li><a href="#附原文材料清单"
+id="toc-附原文材料清单">附：原文材料清单</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="lab1-phase-1-svg-编辑器cli任务分析">Lab1 Phase 1 · SVG
+编辑器（CLI）任务分析</h1>
+<ul>
+<li><strong>材料来源</strong>：<a
+href="../../assignment/phase_cli_1.md"><code>assignment/phase_cli_1.md</code></a>（本次作业唯一材料，本身已是
+Markdown，无需另行提取转换；本文行号引用均指该文件，简写作「原文
+L<strong>n</strong>」）</li>
+<li><strong>文档性质</strong>：开发前的需求梳理与分析，供架构方案设计时引用；不包含实现。</li>
+<li><strong>整理日期</strong>：2026-10-24</li>
+<li><strong>修订记录</strong>：2026-10-25 随 <a
+href="../adr/0001-repo-structure.md">ADR-0001</a>（仓库重组）更新仓库路径相关表述，Q11
+标记为已裁决。</li>
+</ul>
+<hr />
+<h2 id="任务一句话概述">1. 任务一句话概述</h2>
+<p>用 <strong>TypeScript + 面向对象</strong>方法、与 <strong>AI
+智能体协作</strong>，实现一个命令行 REPL 风格的 SVG 编辑器内核：支持
+<strong>19 条命令</strong>（文档类 init/read/save/canvas、编辑类
+create/delete/move/scale/set/group/ungroup/addto/front/back、显示类
+tree/show/help、undo/redo），对 <strong>rect / circle / ellipse / line /
+text / g</strong> 六种图形做创建、层级组织（<code>in</code> /
+<code>group</code> / <code>addto</code>
+三种归属时机）、容器与叶子的统一变换（Composite
+语义）与<strong>一条命令一个单元的 undo/redo</strong>，并能与标准 SVG
+文件 <strong>round-trip</strong>（<code>save</code>
+输出可被浏览器直接打开、<code>read</code> 读回外部文件并自动补
+id）；作业点明考察重点是「如何与 AI
+一起完成一个架构良好，恰当使用了设计模式的应用」（原文
+L96），交付物为远程 git 仓库（分步提交历史 + 截止前打 <code>final</code>
+tag）与工程内
+<code>doc/README.md</code>（含架构方案、过程记录、一致性自查、质量保证手段四节）（L100–L130）。</p>
+<hr />
+<h2 id="任务展开需求意图与能力培养">2.
+任务展开：需求、意图与能力培养</h2>
+<h3 id="任务需求的具体形态">2.1 任务需求的具体形态</h3>
+<ul>
+<li><strong>一个 REPL</strong>：提示符
+<code>svg&gt;</code>，逐行读入命令，<code>#</code>
+开头行为注释——因此命令序列可以存成脚本回放（L141）。</li>
+<li><strong>一棵图形树</strong>：六种图形类型加 <code>&lt;g&gt;</code>
+容器构成树形文档模型；所有命令<strong>一律按唯一、大小写敏感的 id
+定位</strong>（L142），读入外部 SVG 缺 id
+时按「标签名+序号」自动补并打印警告（L143）。</li>
+<li><strong>两类命令语义</strong>：文档类（init/read/save/canvas
+改尺寸）与文件/画布相关，执行后 <strong>undo/redo
+禁止</strong>（L162、L251）；编辑类命令全部可
+undo/redo，且<strong>一条编辑命令 = 一个 undo
+单元</strong>（L250）；显示类不进 undo 栈（L185）。</li>
+<li><strong>文件 round-trip</strong>：<code>save</code> 产出的就是标准
+SVG（可直接在浏览器打开预览，L9–L10）；<code>read</code> 读回外部
+SVG（L167）。复合图形 box 的序列化/读回降级策略（<code>data-kind</code>
+标记）已为插件阶段预定义（L291）。</li>
+<li><strong>阶段边界</strong>：<code>box</code>
+复合类型属于<strong>后续插件化阶段</strong>的目标，本阶段
+<code>create box</code> 报
+<code>unknown shape type</code>（L175、L255）；但错误文案
+<code>(is the plugin loaded?)</code>（L240）与「变化点假设」要求（L114）都暗示本阶段架构<strong>要为插件留好插槽</strong>。</li>
+</ul>
+<h3 id="命题意图为什么这么考">2.2 命题意图（为什么这么考）</h3>
+<p>原文开宗明义：「本Pj考察的重点是<strong>如何与AI一起完成一个架构良好，恰当使用了设计模式的应用</strong>」（L96）。拆开是三层：</p>
+<ol type="1">
+<li><strong>AI 协作工程</strong>：作业把「使用 AI 智能体（Codex、Qoder
+等）协作完成」写进实现范式（L157），又在文档要求里专设「过程记录」——记录「你从
+AI
+给的建议、生成的文档或代码中发现了什么问题、如何确认并纠正」（L118）。意图是训练「把
+AI
+当执行者、自己当架构师与验收者」的工作方式：出方案、定规范、审产出。</li>
+<li><strong>架构与演进意识</strong>：架构方案的四项要求里，「依赖方向规则」与「变化点假设」（L113–L114）明确针对一次性堆代码；作业还预埋了至少三个已知变化点——<code>box</code>
+插件类型（L253–L293）、「CLI / agent /
+鼠标三种通道」的提法（L149，暗示后续有鼠标 GUI 与 agent 阶段）、文件名
+<code>phase_cli_1</code> 本身（CLI 阶段第一步）。</li>
+<li><strong>设计模式落地</strong>：undo/redo 事实上强制
+<strong>Command</strong>（L112
+明写「要求使用Command模式」）；容器与叶子统一操作强制
+<strong>Composite</strong>（L156）；「按名字分派只允许两处：命令分发与图形工厂」（L155）是对
+<strong>Factory</strong>
+位置的精确约束；<code>(is the plugin loaded?)</code>（L240）预告开闭原则与插件化。</li>
+</ol>
+<h3 id="培养锻炼的能力">2.3 培养/锻炼的能力</h3>
+<ul>
+<li><strong>面向对象建模</strong>：树形领域模型（图形类层次、摘出/提升/保序等树操作、id
+索引）。</li>
+<li><strong>设计模式的选择与落地</strong>：Command、Composite、Factory
+为必答，undo 的实现路线（逆命令 vs 快照）是真实的模式权衡。</li>
+<li><strong>架构文档能力</strong>：模块划分 + PlantUML
+组件图/包图、依赖方向规则、变化点清单（L111–L114）。</li>
+<li><strong>演进式设计</strong>：为插件化与多通道（GUI/agent）预留插槽而不实现（L114、L149、L255）。</li>
+<li><strong>质量保证意识</strong>：端到端 transcript
+验收（§6）、错误路径覆盖（§4.2）、一致性自查（L121–L127）。</li>
+<li><strong>AI
+产出批判性审查</strong>：过程记录要求写出发现的问题与纠正过程（L118）。</li>
+<li><strong>Git 工程习惯</strong>：分步提交、禁止 one-shot、tag
+管理（L100）。</li>
+</ul>
+<hr />
+<h2 id="要求分析">3. 要求分析</h2>
+<h3 id="显式要求清单可追踪可量化">3.1
+显式要求清单（可追踪、可量化）</h3>
+<h4 id="a.-交付与流程原文-1">A. 交付与流程（原文 §1）</h4>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>原文位置</th>
+<th>量化验收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>全程 git 管理，推送到远程仓库（GitHub/Gitee 均可）</td>
+<td>L100</td>
+<td>远程仓库完整可访问</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>提交历史体现开发过程：分步推进，<strong>禁止 one-shot
+大提交</strong></td>
+<td>L100</td>
+<td>提交数量与粒度</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>最终提交处打 tag，统一命名
+<code>final</code>，须在<strong>截止时间之前</strong>完成</td>
+<td>L100</td>
+<td>tag 存在且早于 deadline</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>文档格式 Markdown，放工程 <code>doc/</code> 目录下，名为
+<code>README.md</code></td>
+<td>L104</td>
+<td>文件存在且位置正确</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>架构方案①：模块划分（每模块职责）+ <strong>一张 PlantUML
+组件图或包图</strong></td>
+<td>L111</td>
+<td>图 + 模块职责说明</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>架构方案②：设计模式选择与落地，<strong>必须使用 Command
+模式</strong></td>
+<td>L112</td>
+<td>代码落地 + 说明</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>架构方案③：依赖方向规则（哪些模块可依赖哪些 +
+理由），违反即待处理项</td>
+<td>L113</td>
+<td>规则清单</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>架构方案④：变化点假设逐条列出，说明为它留了什么——<strong>或者为什么决定不留</strong></td>
+<td>L114</td>
+<td>逐条清单</td>
+</tr>
+<tr>
+<td>A9</td>
+<td>过程记录：关键讨论与迭代；从 AI
+建议/文档/代码中发现的问题与确认纠正</td>
+<td>L118</td>
+<td>有具体实例的记录</td>
+</tr>
+<tr>
+<td>A10</td>
+<td>一致性自查：实际目录 vs
+方案是否一致（不一致记入修订记录）；依赖规则是否被违反（可抽样检查）</td>
+<td>L124–L125</td>
+<td>两问如实回答</td>
+</tr>
+<tr>
+<td>A11</td>
+<td>质量保证手段：功能完整性如何确认 + 对质量有信心的依据</td>
+<td>L129</td>
+<td>手段说明</td>
+</tr>
+</tbody>
+</table>
+<h4 id="b.-实现范式原文-2.1">B. 实现范式（原文 §2.1）</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>TypeScript + 面向对象：类层次 +
+多态、字段封装、<strong>一类一文件（文件名 = 类名）</strong></td>
+<td>L153</td>
+</tr>
+<tr>
+<td>B2</td>
+<td><strong>禁止</strong>贫血模型（公共数据袋）+ 过程式自由函数 + 到处
+<code>switch(tag)</code> 分派</td>
+<td>L153</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>「未模块化」豁免仅限<strong>架构层</strong>（上帝类、无插槽、IO
+未隔离）；范式层不豁免</td>
+<td>L154</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>按名字分派<strong>只允许两处</strong>：命令分发（命令名→实现）与图形工厂（类型名→类），且须在架构方案中<strong>标注为待重构</strong></td>
+<td>L155</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>容器与叶子统一操作：<code>move</code>/<code>scale</code>/<code>set</code>/<code>delete</code>
+对 <code>&lt;g&gt;</code> 与叶子一视同仁（Composite 语义）</td>
+<td>L156</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>使用 AI 智能体（Codex、Qoder 等）协作完成</td>
+<td>L157</td>
+</tr>
+</tbody>
+</table>
+<h4 id="c.-repl-与通用约定原文-2">C. REPL 与通用约定（原文 §2）</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>提示符 <code>svg&gt;</code>；REPL 逐行读入；<code>#</code>
+开头为注释（命令序列可存成脚本回放）</td>
+<td>L141</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>图形定位一律用 id：每个图形元素（<strong>含容器
+<code>&lt;g&gt;</code></strong>）必须有<strong>唯一、大小写敏感</strong>的
+id</td>
+<td>L142</td>
+</tr>
+<tr>
+<td>C3</td>
+<td><code>create</code>/<code>group</code> 的 id
+为必填参数；<code>read</code> 缺 id 按「标签名+序号」自动分配并打印警告
+<code>warning: assigned id rect1 to unnamed &lt;rect&gt;</code></td>
+<td>L143</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>坐标系与 SVG 一致：原点左上、x 向右 y 向下、单位 px（浮点合法）</td>
+<td>L144</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>带空格参数用双引号包裹（主要是 text 内容）</td>
+<td>L145</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>错误输出统一前缀
+<code>error:</code>、一行一条；<strong>命令失败不改变任何状态</strong></td>
+<td>L146</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>成功反馈：编辑类命令回显结果摘要（如
+<code>rect#r1 moved to (130,20)</code>），显示类直接输出内容</td>
+<td>L147</td>
+</tr>
+</tbody>
+</table>
+<h4 id="d.-命令集原文-34">D. 命令集（原文 §3、§4）</h4>
+<p>命令总量 <strong>19 条</strong>：文档类
+4（init/read/save/canvas，L166–L169）＋ 编辑类
+10（create/delete/move/scale/set/group/ungroup/addto/front/back，L175–L183）＋
+显示类 3（tree/show/help，L189–L191）＋ undo/redo（L197–L198）。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>内置六种类型 rect/circle/ellipse/line/text/g；其余类型报
+<code>unknown shape type</code></td>
+<td>L175</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>create 各类型参数表（rect: <code>x y w h [fill]</code>；circle:
+<code>cx cy r [fill]</code>；ellipse:
+<code>cx cy rx ry [fill]</code>；line:
+<code>x1 y1 x2 y2 [stroke]</code>；text: <code>x y "content"</code>；g:
+空）</td>
+<td>L208–L213</td>
+</tr>
+<tr>
+<td>D3</td>
+<td><code>in &lt;containerId&gt;</code> 子句：所有类型 create
+支持尾缀；容器须已存在且为 g 类型；三种归属时机 =
+创建时归属（in）/事后收编（group）/移动归属（addto）</td>
+<td>L219, L230, L238–L239</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>fill/stroke 省略时<strong>不写入该属性</strong>（渲染默认
+fill=black、stroke=none）</td>
+<td>L215</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>set
+白名单：<code>fill</code>/<code>stroke</code>/<code>stroke-width</code>
++ 各类型几何属性 + text 内容 <code>text</code>；白名单外报
+<code>error: unknown attribute: &lt;attr&gt;</code></td>
+<td>L217</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>delete：删除容器时连同全部子孙</td>
+<td>L176</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>move：增量平移；作用于容器时整体平移</td>
+<td>L177</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>scale：等比缩放，factor
+同乘<strong>全部几何属性（位置与尺寸）</strong>；容器递归到每个子孙</td>
+<td>L178</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>group：新建容器收入若干图形——从各自原父容器摘出、<strong>保持相对顺序</strong></td>
+<td>L180</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>ungroup：解散容器，子图形提升到原容器的父级、<strong>占据原容器的位置</strong></td>
+<td>L181</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>addto：把已有图形移入容器，作为<strong>最后一个子节点</strong></td>
+<td>L182</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>front/back：调整 z-order（同级最前/最后）</td>
+<td>L183</td>
+</tr>
+<tr>
+<td>D13</td>
+<td><strong>一条编辑命令 = 一个 undo 单元</strong>（如
+<code>group g1 r1 c1 t1</code> 整体是一个单元）</td>
+<td>L250</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>文档类命令（init/read/save <strong>以及 canvas
+修改尺寸</strong>）执行后 undo/redo 禁止，报
+<code>error: undo not allowed after io command</code>，直到下一次编辑命令重新解禁</td>
+<td>L251</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>undo 后若有新编辑，<strong>redo 栈清空</strong></td>
+<td>L198</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>错误信息约定 12 场景、逐字文案（id
+已存在/不存在、容器不存在/不是容器、未知类型、ungroup 复合图形、group
+自含子孙、ungroup 顶层容器、scale
+非正数、文件不可读/不可写、无文档）</td>
+<td>L236–L246</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>tree
+输出：结构树<strong>内联关键几何属性</strong>；<code>tree &lt;id&gt;</code>
+只显示以该 id 为根的子树</td>
+<td>L303–L313</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>show 输出：类型#id、parent、逐行属性</td>
+<td>L318–L320</td>
+</tr>
+</tbody>
+</table>
+<h4 id="e.-端到端验收样本原文-6">E. 端到端验收样本（原文 §6）</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>要求</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>完整会话 transcript 可复现：banner
+<code>svg-editor 0.1 — type 'help' for commands</code>、各命令回显、错误、警告、元素计数逐字一致</td>
+<td>L329–L388</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>外部 SVG 读入用例（other.svg：含缺 id 元素 → 警告 + 7
+元素读入）</td>
+<td>L377–L405</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>两节点流程图案例：<code>in</code> 子句自顶向下构建、容器
+move/undo、<code>saved to flowchart.svg (8 elements)</code></td>
+<td>L424–L474</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>box
+版本案例——<strong>本阶段不要求实现</strong>，为插件化阶段目标展示</td>
+<td>L477–L519, L255</td>
+</tr>
+</tbody>
+</table>
+<h4 id="f.-明确排除项本阶段不做">F. 明确排除项（本阶段不做）</h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>排除项</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>box 复合图形：本阶段 <code>create box</code> 报
+<code>unknown shape type</code></td>
+<td>L175, L255</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>结构路径寻址（如 <code>/canvas/g1/rect[2]</code>，类似 XPath）</td>
+<td>L149</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>插件动态加载（「内核为此新增的代码为 0」是插件化阶段目标）</td>
+<td>L293</td>
+</tr>
+</tbody>
+</table>
+<h3 id="隐式要求风格与质量">3.2 隐式要求（风格与质量）</h3>
+<ul>
+<li><strong>架构良好是评分核心而非附加项</strong>（L96）——功能正确只是及格线。</li>
+<li>文档要「<strong>如实</strong>」（L122）：一致性自查要求诚实暴露方案与实现的偏差并记入修订记录，不粉饰。</li>
+<li><strong>输出文案与 transcript 逐字一致</strong>：§6
+的回显/警告/错误字符串是事实上的验收断言（E1–E3）。</li>
+<li>提交历史反映<strong>真实过程</strong>（L100），隐含 commit message
+可读、可回溯。</li>
+<li>一类一文件（L153）隐含「目录即架构」的清晰度要求：看目录就知道模块划分。</li>
+<li>AI 使用须<strong>留痕且经审查</strong>：过程记录（L118）隐含不能
+blind copy AI 产出。</li>
+</ul>
+<h3 id="从原文可推导的细节未明说可推断需在设计时确认">3.3
+从原文可推导的细节（未明说、可推断，需在设计时确认）</h3>
+<ol type="1">
+<li><strong>save 的元素计数不含 <code>&lt;svg&gt;</code>
+根</strong>：demo.svg 计 5 = bg + title + g#markers + c1 +
+box（L373）；other.svg 计 7 = 全部非根元素（L379）；flowchart.svg 计 8 =
+flowchart + node1 + 2×(rect+text) +
+arrow1（L474）。三例一致：<strong>计数 = 除根外全部元素（含
+g）</strong>。</li>
+<li><strong>move 的回显格式分两种</strong>：叶子报绝对位置
+<code>circle#c1 moved to (130,100)</code>（L354），undo 为
+<code>moved back to (100,100)</code>（L356）；容器报增量
+<code>g#node2 moved by (0,100)</code>（L465），undo 为
+<code>moved back by (0,-100)</code>（L467）。</li>
+<li><strong>delete 的 undo
+回显</strong>：<code>rect#box restored into g#markers</code>（L370）——恢复回<strong>原父容器</strong>。</li>
+<li><strong>tree 每类型的属性格式</strong>：rect
+<code>x= y= w= h= fill=</code>；circle <code>cx= cy= r=</code>；text
+<code>(x,y) "内容"</code>；line
+<code>(x1,y1) -&gt; (x2,y2)</code>（L306–L310、L457–L462）。</li>
+<li><strong>ungroup 的两种拒绝与本阶段的可行性</strong>：普通
+<code>g</code> 可以 ungroup（L181
+是本阶段命令）；但「复合图形」（插件类型，本阶段不存在，L241）与「根级容器」（svg
+直接子节点，L243）不可 ungroup。</li>
+<li><strong><code>#</code> 注释仅识别行首</strong>（L141），因此 text
+内容含 <code>#</code> 不受影响（但需自定引号内 <code>#</code>
+的解析规则，见 Q7）。</li>
+<li><strong>启动
+banner</strong>：<code>svg-editor 0.1 — type 'help' for commands</code>（L330）。</li>
+</ol>
+<hr />
+<h2 id="前置知识技术选型与-open-questions">4. 前置知识、技术选型与 open
+questions</h2>
+<h3 id="需要掌握或培养的前置知识与核心素养">4.1
+需要掌握或培养的前置知识与核心素养</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>领域</th>
+<th>具体内容</th>
+<th>作业内依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SVG/XML</td>
+<td>元素树、公共属性（id/fill/stroke/stroke-width）、<code>&lt;g&gt;</code>
+与 transform、XML 转义与 round-trip</td>
+<td>L7–L47, L52–L66</td>
+</tr>
+<tr>
+<td>TypeScript/OO</td>
+<td>类层次与多态、抽象类/接口、封装、模块化、一类一文件</td>
+<td>L153</td>
+</tr>
+<tr>
+<td>设计模式</td>
+<td><strong>Command</strong>（必选，L112）、<strong>Composite</strong>（L156）、<strong>Factory</strong>（L155
+的两个允许分派点之一）；undo 的两种实现（逆命令 vs Memento
+快照）；为插件预留 Provider 接口（L257、L293）</td>
+<td>L111–L112, L155–L156</td>
+</tr>
+<tr>
+<td>数据结构</td>
+<td>树的增删移（摘出/提升/保序）、z-order、id → 节点索引</td>
+<td>L180–L183</td>
+</tr>
+<tr>
+<td>CLI 工程</td>
+<td>REPL（如 Node readline）、双引号参数解析、脚本回放</td>
+<td>L141, L145</td>
+</tr>
+<tr>
+<td>序列化</td>
+<td>SVG 序列化/解析、缺 id 补全与警告、（预研）带 <code>data-kind</code>
+的类型还原与降级</td>
+<td>L167, L291</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>transcript 驱动的端到端验收、错误路径用例</td>
+<td>§6, L129–L130</td>
+</tr>
+<tr>
+<td>Git</td>
+<td>分步提交、tag、远程仓库</td>
+<td>L100</td>
+</tr>
+<tr>
+<td>文档与图</td>
+<td>PlantUML 组件图/包图、架构文档写作</td>
+<td>L111</td>
+</tr>
+<tr>
+<td>AI 协作素养</td>
+<td>方案先行、规范先行（把命令-行为-文案表当规范喂给 AI）、批判性审查 AI
+产出、记录纠正</td>
+<td>L118, L157</td>
+</tr>
+</tbody>
+</table>
+<h3 id="需要抉择的架构与技术选型">4.2 需要抉择的架构与技术选型</h3>
+<ol type="1">
+<li><strong>undo/redo 实现路线</strong>（影响最大的抉择）：
+<ul>
+<li><em>逆命令</em>：每个 Command 实现 do/undo，redo 即再
+do——语义直观，但每个命令写两套逻辑，容器操作（group/ungroup/scale
+递归）的逆操作易错；</li>
+<li><em>快照/Memento</em>：命令执行前拍（路径级）快照——实现省力、天然正确，但要控制快照粒度与内存。</li>
+<li>无论哪条路，必须与 Command
+模式自洽（L112）。<strong>倾向：逆命令为主，仅 delete
+这类大改动考虑快照兜底</strong>——最终以架构文档论证为准。</li>
+</ul></li>
+<li><strong>容器变换的内部表示</strong>：move/scale
+容器时，是「扁平化」（直接改写每个子孙坐标）还是「g 存
+transform、渲染时合成」？影响 ungroup
+的「占据原容器的位置」（L181）、save 是否输出 <code>transform</code>
+属性、以及读入外部带 transform 的
+<code>&lt;g&gt;</code>（原文背景知识专门演示了 transform，L52–L66）的
+round-trip。<strong>倾向：内部扁平化坐标（本阶段最小正确实现），外部
+transform 读入时展开</strong>，并把该假设写入架构文档。</li>
+<li><strong>XML 解析：手写 vs 库</strong>（如 fast-xml-parser / <span
+class="citation"
+data-cites="xmldom/xmldom">@xmldom/xmldom</span>）：手写可控 round-trip
+细节与警告注入；库省力但丢原始格式。作业点名「IO
+未隔离」属架构层问题（L154），即 IO
+必须隔离成独立模块。<strong>倾向：手写小解析器</strong>（本阶段只需 6
+种元素 + svg 的子集），属性保真更可控。</li>
+<li><strong>模块划分草案</strong>（架构方案起点，非结论）：<code>cli</code>（REPL、词法/参数解析）→
+<code>command</code>（命令对象、分发表、undo 栈）→
+<code>core</code>（Shape 类层次、Document、id 注册表）→
+<code>io</code>（SVG 读写）→ <code>render</code>（tree/show 文本渲染）→
+<code>factory</code>（类型注册，为 ShapeProvider
+插槽预留）。依赖方向：core 不依赖 command/cli/io；io、render 单向依赖
+core；command 经接口依赖 core。</li>
+<li><strong>测试框架</strong>：Vitest（或 Jest）；把 §6 transcript
+直接做成端到端断言，§4.2 错误表逐条单测——这同时就是
+A11「质量保证手段」的答案。</li>
+<li><strong>运行形态</strong>：Node + npm，入口
+<code>npm run cli</code>（L329）；需定 Node 版本与 ESM/CJS。</li>
+<li><strong>AI
+协作流程</strong>：先固化架构文档与「命令-行为-文案」规范表，再让 AI
+按模块实现，人对每个模块做一致性检查——直接服务 A9/A10 的交付要求。</li>
+</ol>
+<h3 id="重要-open-questions需与课程组确认或自行决策并写入-readme">4.3
+重要 open questions（需与课程组确认，或自行决策并写入 README）</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>问题</th>
+<th>背景</th>
+<th>初步倾向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td><code>scale</code> 作用于 text
+时，「位置与尺寸」（L178）是否包含字号？text 的 set 白名单只有
+x/y/text（L217），无 font-size</td>
+<td>L178 vs L217</td>
+<td>本阶段只乘 x/y、字号不动；假设写入 README</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>读入的 <code>&lt;g&gt;</code> 带 <code>transform</code>
+属性时如何处理（展开/忽略/报错）？</td>
+<td>L52–L66 演示了 transform</td>
+<td>解析时把平移/缩放展开到子孙坐标；不支持的变体警告降级</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td><code>save</code> 无参数且当前文档来自 init（从未
+read）时保存到哪？</td>
+<td>L168 只定义「保存到读入时的路径」</td>
+<td>报错（自定文案），README 记录</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>一条命令同时触发多个错误时的判定优先级（如 create：类型未知 + id
+重复 + in 容器不存在）</td>
+<td>§4.2 未规定</td>
+<td>固定校验链：语法→类型→id→容器→参数，README 明示</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>read 的文件内部出现重复 id（违反 SVG 规范但真实存在）怎么办？</td>
+<td>L142 要求唯一，L143 只定义缺 id</td>
+<td>自动改名 + 警告（与缺 id 策略一致）</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>浮点输出格式：整数是否省略小数、scale 后的精度截断</td>
+<td>transcript 整数无小数点（L354）</td>
+<td>输出去尾零，内部保留全精度</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>text 内容转义：双引号如何嵌套？序列化时 XML
+转义（<code>&amp;</code>、<code>&lt;</code>）规则</td>
+<td>L145 只说双引号包裹</td>
+<td>支持 <code>\"</code> 转义；序列化按 XML 规范转义</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>front/back 的 undo 回显文案 transcript 未出现</td>
+<td>L183</td>
+<td>自定文案并写入验收表</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td>canvas 缩小后已有图形越界是否裁剪/警告？</td>
+<td>L169 未说</td>
+<td>坐标不动，仅改画布尺寸</td>
+</tr>
+<tr>
+<td>Q10</td>
+<td>group/ungroup/addto 的 undo 回显文案</td>
+<td>§6 未覆盖</td>
+<td>自定并写入验收表</td>
+</tr>
+<tr>
+<td>Q11</td>
+<td><del>工程根目录位置</del>
+<strong>已裁决</strong>：仓库根即工程根，<code>lab1/</code>
+层级废弃，交付文档为 <code>doc/README.md</code></td>
+<td>L104</td>
+<td>✅ ADR-0001（2026-10-25）</td>
+</tr>
+<tr>
+<td>Q12</td>
+<td>是否允许第三方运行时依赖（XML 解析等）？</td>
+<td>未说明</td>
+<td>运行时零依赖、仅 devDependencies（测试/构建）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="任务交付物">5. 任务交付物</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>交付物</th>
+<th>要求摘要</th>
+<th>原文位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>远程 git 仓库</strong></td>
+<td>全程 git 管理；历史分步、无 one-shot；最终提交 tag
+<code>final</code>（截止前完成）</td>
+<td>L100</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>CLI 程序（TS/OO）</strong></td>
+<td><code>npm run cli</code> 启动 REPL；19 条命令、6 种内置类型；§6/6.1
+transcript
+级还原；错误/警告/回显文案逐字一致；范式约束（B1–B5）全部满足</td>
+<td>L153, L175, L329</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>工程内 <code>doc/README.md</code></strong></td>
+<td>四节：架构方案（模块划分 + PlantUML 图、设计模式【必含
+Command】、依赖方向规则、变化点假设）、过程记录、一致性自查、质量保证手段</td>
+<td>L104–L130</td>
+</tr>
+<tr>
+<td>4</td>
+<td>质量保证证据（隐含交付）</td>
+<td>功能完整性与质量信心的依据——建议：§6/6.1 transcript 端到端测试 +
+§4.2 错误用例单测，作为 README 第 4 节的实证</td>
+<td>L129</td>
+</tr>
+<tr>
+<td>5</td>
+<td>AI 协作过程记录</td>
+<td>关键讨论、AI 产出的问题与纠正实例（README 内嵌）</td>
+<td>L118</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>文档分层</strong>：按
+ADR-0001，仓库根即工程根，工作文档与交付文档同在
+<code>doc/</code>——<code>doc/README.md</code>
+是作业交付入口（L104），<code>doc/spec/</code>、<code>doc/adr/</code>
+是支撑它的正式工作文档（本文位于 <code>doc/spec/</code>），AI 协作记录在
+<code>agent/</code>。</p>
+</blockquote>
+<hr />
+<h2 id="附原文材料清单">附：原文材料清单</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>文件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assignment/phase_cli_1.md</code></td>
+<td>唯一作业材料（Markdown，521 行）：§0 SVG 背景知识（L3–L91）、§1
+提交内容（L94–L131）、§2 通用约定与实现范式（L137–L158）、§3
+命令总表（L160–L198）、§4 命令细则（L202–L293）、§5
+显示格式（L297–L321）、§6 典型会话与案例（L326–L521）</td>
+</tr>
+</tbody>
+</table>
+<p>材料本身已是 Markdown，无需提取转换；上表即其结构索引。</p>
+</body>
+</html>
