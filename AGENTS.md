@@ -30,8 +30,9 @@
 
 1. 读 `assignment/phase_cli_1.md`（原文）与 `doc/spec/assignment-analysis.md`（需求分析，含 open questions 的裁决状态）；
 2. 动手前查 `doc/adr/` 是否已有相关决策；结构性变更先立 ADR 再写代码；
-3. 实现严格对照 spec 的命令-行为-文案表；
-4. 会话收尾：更新 `agent/workspace/handoff.md`（做了什么、下一步、未决问题）。
+3. 写代码前先声明改动面：动哪些模块、新增哪些文件、关键接口签名、明确不动的部分；边界对不上在这一层解决，不进代码；
+4. 实现严格对照 spec 的命令-行为-文案表；
+5. 会话收尾：更新 `agent/workspace/handoff.md`（做了什么、下一步、未决问题）。
 
 ## 构建与运行
 
