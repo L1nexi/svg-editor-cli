@@ -4,7 +4,7 @@ import type { EditEnv } from "./EditEnv";
 import type { Payload } from "./Payload";
 import type { TimelineEnv } from "./TimelineEnv";
 
-// 命令基类：name 供注册表以 cmd.name 为键（L155 白名单第一处，注册表在 engine）
+// 命令基类：name 供注册表以 cmd.name 为键（分派白名单第一处，注册表在 engine）
 export abstract class Command {
   abstract readonly name: string;
   // 默认需要文档，仅 init / read 覆写为 false；engine 按此字段守卫
