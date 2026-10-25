@@ -27,3 +27,4 @@
 
 - 2026-10-25 建立骨架；仓库结构与协作规范见 [`adr/0001-repo-structure.md`](adr/0001-repo-structure.md)；核心架构裁决见 [`adr/0002-core-architecture.md`](adr/0002-core-architecture.md)。
 - 2026-10-26 命令层重构（[`adr/0005-src-layout-and-validation.md`](adr/0005-src-layout-and-validation.md)）：src 内部分层收拢（command/base+edit、errors/validation+hierarchy+entity、types/base+shapes）；测试收拢至 `tests/`（修订 ADR-0003 同目录条款）；校验下沉——`Command.run()` 模板方法统一参数个数校验（usage 串成为声明数据），`Canvas.requireShape/requireContainer` 统一 find-or-fail。文案零变化，66 单测绿。
+- 2026-10-26 显示类与文档类命令（命令模块收尾）：init/read/save/canvas 落 `command/document/`（init/read 豁免无文档守卫；canvas 无参只读不动时间线），tree/show/help 落 `command/display/`（tree 对齐公式 = max(前缀宽+ref宽)+2，§5.1 样例逐字命中；§6.1 手排差 3 列按公式，记入本自查）；新增 `NoSavePathError`（ADR-0005 后果节留痕归类）。94 单测绿；undo/redo 随 engine 批次。

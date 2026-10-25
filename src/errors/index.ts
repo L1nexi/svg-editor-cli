@@ -8,6 +8,7 @@ export { InvalidArgumentsError } from "./validation/InvalidArgumentsError";
 export { ScaleFactorError } from "./validation/ScaleFactorError";
 export { UnknownShapeTypeError } from "./validation/UnknownShapeTypeError";
 export { IdExistsError } from "./entity/IdExistsError";
+export { NoSavePathError } from "./entity/NoSavePathError";
 export { NoSuchShapeError } from "./entity/NoSuchShapeError";
 export { NoSuchContainerError } from "./entity/NoSuchContainerError";
 export { NotAContainerError } from "./hierarchy/NotAContainerError";

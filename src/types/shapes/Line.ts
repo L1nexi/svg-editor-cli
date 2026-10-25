@@ -52,9 +52,10 @@ export class Line extends Shape {
     return { x: this.x1, y: this.y1 }
   }
 
-  // 总结为箭头形式，且无画笔段（line 无 fill 参数，stroke 不内联——commands.md §4.3）
+  // 总结为箭头形式；fill 已设则内联（spec §4.3「只内联 fill」对全部类型成立），stroke 永不内联
   override summary(): string {
-    return `(${formatNumber(this.x1)},${formatNumber(this.y1)}) -> (${formatNumber(this.x2)},${formatNumber(this.y2)})`
+    const arrow = `(${formatNumber(this.x1)},${formatNumber(this.y1)}) -> (${formatNumber(this.x2)},${formatNumber(this.y2)})`
+    return this.fill !== null ? `${arrow} fill=${this.fill}` : arrow
   }
 
   protected override geometryLine(): string {

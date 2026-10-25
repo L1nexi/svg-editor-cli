@@ -10,7 +10,7 @@ import type { TimelineEnv } from "./TimelineEnv";
 export abstract class Command {
   abstract readonly name: string;
   // 默认需要文档，仅 init / read 覆写为 false；engine 按此字段守卫
-  readonly needsDocument = true;
+  readonly needsDocument: boolean = true;
   // 参数个数声明：maxArgs null = 上不封顶（create / group）
   protected abstract readonly minArgs: number;
   protected readonly maxArgs: number | null = null;

@@ -128,6 +128,9 @@ describe('显示文本与定位点（command 模块的供货面，ADR-0004 补�
       '(280,130) -> (520,130)',
     )
     expect(makeOk('text', 't', '155', '135', '开始').summary()).toBe('(155,135) "开始"')
+    const lf = makeOk('line', 'lf', '0', '0', '10', '10')
+    if (!lf.set('fill', 'red').ok) throw new Error('set 失败')
+    expect(lf.summary()).toBe('(0,0) -> (10,10) fill=red')
   })
 
   it('details：几何一行 + 已设置的画笔属性各一行', () => {
