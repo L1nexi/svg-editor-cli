@@ -5,29 +5,16 @@ import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
 import { Text } from '../../src/types/shapes/Text'
 import type { EditEnv } from '../../src/command/base/EditEnv'
-import type { Payload } from '../../src/command/base/Payload'
-import { Command } from '../../src/command/base/Command'
 import { HelpCommand } from '../../src/command/display/HelpCommand'
 import { ShowCommand } from '../../src/command/display/ShowCommand'
 import { TreeCommand } from '../../src/command/display/TreeCommand'
+import { failEcho, okRun } from '../helpers'
 
 const tree = new TreeCommand()
 const show = new ShowCommand()
 const help = new HelpCommand()
 
 const env = (c: Canvas): EditEnv => ({ canvas: c })
-
-function okRun(c: Canvas, cmd: Command, args: string[]): Payload {
-  const r = cmd.run(args, env(c))
-  if (!r.ok) throw new Error(`意外失败: ${r.error.format()}`)
-  return r.value
-}
-
-function fail(c: Canvas, cmd: Command, args: string[]): string {
-  const r = cmd.run(args, env(c))
-  if (r.ok) throw new Error(`意外成功: ${r.value.forward}`)
-  return r.error.format()
-}
 
 // 作业 §5.1 transcript 的树状态：bg / title / markers[c1, box]，fill 各就各位
 function sampleCanvas(): Canvas {
@@ -50,7 +37,7 @@ function sampleCanvas(): Canvas {
 
 describe('tree', () => {
   it('全树：svg 头行 + 前缀字形 + 属性列对齐（§5.1 样例逐字）', () => {
-    const out = okRun(sampleCanvas(), tree, []).forward
+    const out = okRun(env(sampleCanvas()), tree, []).forward
     expect(out).toBe(
       [
         'svg (800x600)',
@@ -64,7 +51,7 @@ describe('tree', () => {
   })
 
   it('子树模式：根行无前缀，对齐按子树自身计算（P）', () => {
-    const out = okRun(sampleCanvas(), tree, ['markers']).forward
+    const out = okRun(env(sampleCanvas()), tree, ['markers']).forward
     expect(out).toBe(
       [
         'g#markers',
@@ -75,29 +62,29 @@ describe('tree', () => {
   })
 
   it('空画布只有头行；尺寸来自画布', () => {
-    expect(okRun(new Canvas(400, 300), tree, []).forward).toBe('svg (400x300)')
+    expect(okRun(env(new Canvas(400, 300)), tree, []).forward).toBe('svg (400x300)')
   })
 
   it('no such shape（复用）', () => {
-    expect(fail(sampleCanvas(), tree, ['nope'])).toBe('error: no such shape: nope')
+    expect(failEcho(env(sampleCanvas()), tree, ['nope'])).toBe('error: no such shape: nope')
   })
 })
 
 describe('show', () => {
   it('叶子：首行两空格 + parent（§4.3 锚定形）；属性行两空格缩进', () => {
-    expect(okRun(sampleCanvas(), show, ['c1']).forward).toBe(
+    expect(okRun(env(sampleCanvas()), show, ['c1']).forward).toBe(
       ['circle#c1  parent=g#markers', '  cx=100 cy=100 r=20', '  fill=red'].join('\n'),
     )
   })
 
   it('顶层 → parent=svg（P）；rect 几何 + fill 各行', () => {
-    expect(okRun(sampleCanvas(), show, ['bg']).forward).toBe(
+    expect(okRun(env(sampleCanvas()), show, ['bg']).forward).toBe(
       ['rect#bg  parent=svg', '  x=0 y=0 w=800 h=600', '  fill=#ffffff'].join('\n'),
     )
   })
 
   it('g：无几何行，children 行（P）', () => {
-    expect(okRun(sampleCanvas(), show, ['markers']).forward).toBe(
+    expect(okRun(env(sampleCanvas()), show, ['markers']).forward).toBe(
       ['g#markers  parent=svg', '  children=c1 box'].join('\n'),
     )
   })
@@ -105,17 +92,17 @@ describe('show', () => {
   it('空容器无 children 行', () => {
     const c = sampleCanvas()
     c.getRoot().addChild(new Group('empty'))
-    expect(okRun(c, show, ['empty']).forward).toBe('g#empty  parent=svg')
+    expect(okRun(env(c), show, ['empty']).forward).toBe('g#empty  parent=svg')
   })
 
   it('no such shape（复用）', () => {
-    expect(fail(sampleCanvas(), show, ['ghost'])).toBe('error: no such shape: ghost')
+    expect(failEcho(env(sampleCanvas()), show, ['ghost'])).toBe('error: no such shape: ghost')
   })
 })
 
 describe('help', () => {
   it('19 行静态，§3 命令总表顺序（P）', () => {
-    const lines = okRun(sampleCanvas(), help, []).forward.split('\n')
+    const lines = okRun(env(sampleCanvas()), help, []).forward.split('\n')
     expect(lines).toHaveLength(19)
     expect(lines[0]).toBe('init [w] [h]')
     expect(lines[4]).toBe('create <type> <id> [params…] [in <containerId>]')
@@ -125,7 +112,7 @@ describe('help', () => {
   })
 
   it('零参命令收到多余参数 → expected no parameters（§4.4 P）', () => {
-    expect(fail(sampleCanvas(), help, ['x'])).toBe(
+    expect(failEcho(env(sampleCanvas()), help, ['x'])).toBe(
       'error: invalid arguments: expected no parameters',
     )
   })

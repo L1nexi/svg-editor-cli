@@ -4,14 +4,13 @@ import { Circle } from '../../src/types/shapes/Circle'
 import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
 import type { DocumentEnv } from '../../src/command/base/DocumentEnv'
-import type { Payload } from '../../src/command/base/Payload'
 import { ReadPayload } from '../../src/command/base/ReadPayload'
 import { CanvasCommand } from '../../src/command/document/CanvasCommand'
 import { InitCommand } from '../../src/command/document/InitCommand'
 import { ReadCommand } from '../../src/command/document/ReadCommand'
 import { SaveCommand } from '../../src/command/document/SaveCommand'
-import { Command } from '../../src/command/base/Command'
 import { DomainError, Err, Ok } from '../../src/errors'
+import { failEcho, okRun } from '../helpers'
 
 const init = new InitCommand()
 const read = new ReadCommand()
@@ -43,18 +42,6 @@ function docEnv(c: Canvas, readPath: string | null = null): DocumentEnv & {
     },
   }
   return env
-}
-
-function okRun(env: DocumentEnv, cmd: Command, args: string[]): Payload {
-  const r = cmd.run(args, env)
-  if (!r.ok) throw new Error(`意外失败: ${r.error.format()}`)
-  return r.value
-}
-
-function fail(env: DocumentEnv, cmd: Command, args: string[]): string {
-  const r = cmd.run(args, env)
-  if (r.ok) throw new Error(`意外成功: ${r.value.forward}`)
-  return r.error.format()
 }
 
 // 七元素画布，对应作业 §6 other.svg 的结构（计数锚定 7 elements）
@@ -89,16 +76,16 @@ describe('init', () => {
 
   it('数值非法与非正尺寸（P）', () => {
     const env = docEnv(new Canvas())
-    expect(fail(env, init, ['abc', '300'])).toBe('error: invalid number for width: abc')
-    expect(fail(env, init, ['400', 'abc'])).toBe('error: invalid number for height: abc')
-    expect(fail(env, init, ['0', '300'])).toBe('error: invalid value for width: 0')
-    expect(fail(env, init, ['400', '-1'])).toBe('error: invalid value for height: -1')
+    expect(failEcho(env, init, ['abc', '300'])).toBe('error: invalid number for width: abc')
+    expect(failEcho(env, init, ['400', 'abc'])).toBe('error: invalid number for height: abc')
+    expect(failEcho(env, init, ['0', '300'])).toBe('error: invalid value for width: 0')
+    expect(failEcho(env, init, ['400', '-1'])).toBe('error: invalid value for height: -1')
   })
 
   it('单参与超参 → invalid arguments（P：usage = [w] [h]）', () => {
     const env = docEnv(new Canvas())
-    expect(fail(env, init, ['800'])).toBe('error: invalid arguments: expected [w] [h]')
-    expect(fail(env, init, ['1', '2', '3'])).toBe('error: invalid arguments: expected [w] [h]')
+    expect(failEcho(env, init, ['800'])).toBe('error: invalid arguments: expected [w] [h]')
+    expect(failEcho(env, init, ['1', '2', '3'])).toBe('error: invalid arguments: expected [w] [h]')
   })
 })
 
@@ -123,12 +110,12 @@ describe('read', () => {
     }
     const env = docEnv(new Canvas())
     env.loadDocument = () => Err(new StubError())
-    expect(fail(env, read, ['a.svg'])).toBe('error: cannot read file: a.svg')
+    expect(failEcho(env, read, ['a.svg'])).toBe('error: cannot read file: a.svg')
     expect(env.replaced).toHaveLength(0)
   })
 
   it('usage = <file.svg>', () => {
-    expect(fail(docEnv(new Canvas()), read, [])).toBe('error: invalid arguments: expected <file.svg>')
+    expect(failEcho(docEnv(new Canvas()), read, [])).toBe('error: invalid arguments: expected <file.svg>')
   })
 })
 
@@ -147,11 +134,11 @@ describe('save', () => {
   })
 
   it('无参且来自 init → no save path（Q3）', () => {
-    expect(fail(docEnv(new Canvas()), save, [])).toBe('error: no save path: document came from init')
+    expect(failEcho(docEnv(new Canvas()), save, [])).toBe('error: no save path: document came from init')
   })
 
   it('usage = [file.svg]', () => {
-    expect(fail(docEnv(new Canvas()), save, ['a', 'b'])).toBe(
+    expect(failEcho(docEnv(new Canvas()), save, ['a', 'b'])).toBe(
       'error: invalid arguments: expected [file.svg]',
     )
   })
@@ -169,12 +156,12 @@ describe('canvas', () => {
 
   it('数值非法与非正尺寸（P，同 init）', () => {
     const env = docEnv(new Canvas())
-    expect(fail(env, canvasCmd, ['abc', '300'])).toBe('error: invalid number for width: abc')
-    expect(fail(env, canvasCmd, ['0', '300'])).toBe('error: invalid value for width: 0')
+    expect(failEcho(env, canvasCmd, ['abc', '300'])).toBe('error: invalid number for width: abc')
+    expect(failEcho(env, canvasCmd, ['0', '300'])).toBe('error: invalid value for width: 0')
   })
 
   it('单参 → invalid arguments', () => {
-    expect(fail(docEnv(new Canvas()), canvasCmd, ['400'])).toBe(
+    expect(failEcho(docEnv(new Canvas()), canvasCmd, ['400'])).toBe(
       'error: invalid arguments: expected [w] [h]',
     )
   })
