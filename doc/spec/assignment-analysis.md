@@ -3,7 +3,7 @@
 - **材料来源**：[`assignment/phase_cli_1.md`](../../assignment/phase_cli_1.md)（本次作业唯一材料，本身已是 Markdown，无需另行提取转换；本文行号引用均指该文件，简写作「原文 L**n**」）
 - **文档性质**：开发前的需求梳理与分析，供架构方案设计时引用；不包含实现。
 - **整理日期**：2026-10-24
-- **修订记录**：2026-10-25 随 [ADR-0001](../adr/0001-repo-structure.md)（仓库重组）更新仓库路径相关表述，Q11 标记为已裁决；同日 [ADR-0002](../adr/0002-core-architecture.md) 裁决 Q2 / Q4 / Q12。
+- **修订记录**：2026-10-25 随 [ADR-0001](../adr/0001-repo-structure.md)（仓库重组）更新仓库路径相关表述，Q11 标记为已裁决；同日 [ADR-0002](../adr/0002-core-architecture.md) 裁决 Q2 / Q4 / Q12；2026-10-25 [ADR-0004](../adr/0004-command-layer.md) 裁决 Q13（时间线截断，新增本表 Q13 行），Q1 / Q3 / Q5 / Q8 / Q10 的行为与文案基线立入 [commands.md](commands.md)（标 P 的提案）。
 
 ---
 
@@ -195,6 +195,7 @@
 | Q10 | group/ungroup/addto 的 undo 回显文案 | §6 未覆盖 | 自定并写入验收表 |
 | Q11 | ~~工程根目录位置~~ **已裁决**：仓库根即工程根，`lab1/` 层级废弃，交付文档为 `doc/README.md` | L104 | ✅ ADR-0001（2026-10-25） |
 | Q12 | ~~是否允许第三方运行时依赖~~ **已裁决** | 未说明 | ✅ ADR-0002：允许；io 用 @xmldom/xmldom，测试框架另定 |
+| Q13 | ~~文档类命令执行后，io 前的旧编辑是否还能撤销？~~ **已裁决**（transcript 只覆盖「save 后立即 undo」，未覆盖 save → create → undo → undo） | L251 未定义 | ✅ ADR-0004（2026-10-25）：文档类命令截断时间线，io 前旧历史不可恢复；链首不可跨越，链首的 undo/redo 一律报锚定的 `not allowed after io command`（`nothing to undo` 无触发状态，提案撤回） |
 
 ---
 
