@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { BadNumberError, BadValueError, InvalidArgumentsError, UnknownAttrError } from './index'
+import {
+  BadNumberError,
+  BadValueError,
+  CannotGroupIntoDescendantError,
+  CannotUngroupCompositeError,
+  CannotUngroupTopLevelError,
+  IdExistsError,
+  InvalidArgumentsError,
+  NoSuchContainerError,
+  NoSuchShapeError,
+  NotAContainerError,
+  ScaleFactorError,
+  UnknownAttrError,
+  UnknownShapeTypeError,
+} from './index'
 
 // C5 审计点：每条 error: 文案 ↔ 一个类 ↔ 一个断言；spec 已锚定的逐字断言，未锚定的记录提案
 describe('错误对象自 format', () => {
@@ -18,6 +32,26 @@ describe('错误对象自 format', () => {
   it('参数个数不符：文案待行为表定稿', () => {
     expect(new InvalidArgumentsError('x y w h [fill]').format()).toBe(
       'error: invalid arguments: expected x y w h [fill]',
+    )
+  })
+
+  it('引擎语义类：九条锚定文案逐字断言', () => {
+    expect(new IdExistsError('r1').format()).toBe('error: id already exists: r1')
+    expect(new NoSuchShapeError('r9').format()).toBe('error: no such shape: r9')
+    expect(new NoSuchContainerError('node9').format()).toBe('error: no such container: node9')
+    expect(new NotAContainerError('start').format()).toBe('error: not a container: start')
+    expect(new UnknownShapeTypeError('hexagon').format()).toBe(
+      'error: unknown shape type: hexagon (is the plugin loaded?)',
+    )
+    expect(new ScaleFactorError().format()).toBe('error: scale factor must be positive')
+    expect(new CannotUngroupCompositeError('n1').format()).toBe(
+      'error: cannot ungroup composite shape: n1',
+    )
+    expect(new CannotGroupIntoDescendantError('g1').format()).toBe(
+      'error: cannot group a container into its own descendant: g1',
+    )
+    expect(new CannotUngroupTopLevelError('scene').format()).toBe(
+      'error: cannot ungroup top-level container: scene',
     )
   })
 })
