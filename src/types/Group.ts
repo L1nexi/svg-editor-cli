@@ -73,6 +73,20 @@ export class Group extends Shape {
   }
 
   // g 自身无几何属性（ownAttrs 保持基类空表，查表自然拒绝）；画笔属性由基类白名单处理
+  override anchor(): { x: number; y: number } {
+    return { x: 0, y: 0 }
+  }
+
+  // g 无几何属性：总结与几何行均为空，详情为 children 行
+  protected override geometryLine(): string {
+    return ''
+  }
+
+  override details(): string[] {
+    const names = this.children.map(c => c.id)
+    return names.length > 0 ? [`children=${names.join(' ')}`] : []
+  }
+
   override clone(): Group {
     const g = new Group(this.id)
     g.restorePaint(this.paintSnapshot())
@@ -98,7 +112,7 @@ export const groupProvider: ShapeProvider = {
   typeName: 'g',
   fromArgs(id, args) {
     if (args.length !== 0) {
-      return { ok: false, error: new InvalidArgumentsError('（无参数）') }
+      return { ok: false, error: new InvalidArgumentsError('no parameters') }
     }
     return { ok: true, shape: new Group(id) }
   },

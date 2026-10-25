@@ -2,28 +2,28 @@ import { formatNumber, parseNumber } from './num'
 import type { Group } from './Group'
 import { BadValueError, UnknownAttrError, type DomainError } from '../errors'
 
-// set 的结果：错误为正式对象、自行 format（src/errors/），随结果返回而非抛出——
-// 引擎丢弃克隆即状态不变（ADR-0002 决策一）
-export type SetResult = { ok: true } | { ok: false; error: DomainError }
+// set 的结果：old 为被替换属性的旧显示值（backward 文案的取值点，ADR-0004 补充裁决）；
+// 错误为正式对象、自行 format（src/errors/），随结果返回而非抛出——引擎丢弃克隆即状态不变
+export type SetResult = { ok: true; old: string } | { ok: false; error: DomainError }
 
-export const SET_OK: SetResult = { ok: true }
-
-// 各类几何属性的声明式白名单：属性名 → 字符串值处理器
+// 各类几何属性的声明式白名单：属性名 → 字符串值处理器（返回旧显示值）
 export type AttrSetter = (value: string) => SetResult
 
-export function numberAttr(attr: string, apply: (n: number) => void): AttrSetter {
+export function numberAttr(attr: string, get: () => number, apply: (n: number) => void): AttrSetter {
   return value => {
     const n = parseNumber(value)
     if (n === null) return { ok: false, error: new BadValueError(attr, value) }
+    const old = formatNumber(get())
     apply(n)
-    return SET_OK
+    return { ok: true, old }
   }
 }
 
-export function stringAttr(apply: (s: string) => void): AttrSetter {
+export function stringAttr(get: () => string, apply: (s: string) => void): AttrSetter {
   return value => {
+    const old = get()
     apply(value)
-    return SET_OK
+    return { ok: true, old }
   }
 }
 
@@ -72,18 +72,21 @@ export abstract class Shape {
   // set 白名单：公共属性在此处理，几何属性查子类声明表；查不到即白名单外
   set(attr: string, value: string): SetResult {
     if (attr === 'fill') {
+      const old = this.fill ?? ''
       this.fill = value
-      return SET_OK
+      return { ok: true, old }
     }
     if (attr === 'stroke') {
+      const old = this.stroke ?? ''
       this.stroke = value
-      return SET_OK
+      return { ok: true, old }
     }
     if (attr === 'stroke-width') {
       const n = parseNumber(value)
       if (n === null) return { ok: false, error: new BadValueError(attr, value) }
+      const old = this.strokeWidth !== null ? formatNumber(this.strokeWidth) : ''
       this.strokeWidth = n
-      return SET_OK
+      return { ok: true, old }
     }
     const setter = this.ownAttrs[attr]
     return setter ? setter(value) : { ok: false, error: new UnknownAttrError(attr) }
@@ -100,6 +103,32 @@ export abstract class Shape {
       const n = parseNumber(sw)
       if (n !== null) this.strokeWidth = n
     }
+  }
+
+  // 类型级显示文本（ADR-0004 补充裁决）：行内总结——tree 属性行的内联段；
+  // 缺省为几何行 + fill（仅已设置时），形式不同的类型覆写
+  summary(): string {
+    const fill = this.fill !== null ? ` fill=${this.fill}` : ''
+    return this.geometryLine() + fill
+  }
+
+  // 详情行——show 的逐行属性：几何一行 + 已设置的画笔属性各一行
+  details(): string[] {
+    return [this.geometryLine(), ...this.paintLines()]
+  }
+
+  // 定位点——move 回显与未来命中测试的位置锚点（容器回显增量，不用此值）
+  abstract anchor(): { x: number; y: number }
+
+  // summary / details 的共享素材：每类型的几何属性行
+  protected abstract geometryLine(): string
+
+  protected paintLines(): string[] {
+    const lines: string[] = []
+    if (this.fill !== null) lines.push(`fill=${this.fill}`)
+    if (this.stroke !== null) lines.push(`stroke=${this.stroke}`)
+    if (this.strokeWidth !== null) lines.push(`stroke-width=${formatNumber(this.strokeWidth)}`)
+    return lines
   }
 
   // 状态时间线的原子（ADR-0002 决策一）：多态深拷贝；parent 由克隆方重建

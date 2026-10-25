@@ -14,15 +14,18 @@ export class Text extends Shape {
     this.y = y
     this.content = content
     this.ownAttrs = {
-      x: numberAttr('x', n => {
+      x: numberAttr('x', () => this.x, n => {
         this.x = n
       }),
-      y: numberAttr('y', n => {
+      y: numberAttr('y', () => this.y, n => {
         this.y = n
       }),
-      text: stringAttr(s => {
-        this.content = s
-      }),
+      text: stringAttr(
+        () => this.content,
+        s => {
+          this.content = s
+        },
+      ),
     }
   }
 
@@ -39,6 +42,24 @@ export class Text extends Shape {
   override scale(f: number): void {
     this.x *= f
     this.y *= f
+  }
+
+  // 总结为 (x,y) "内容" 形式（与详情的逐属性形式不同，commands.md §4.3）
+  override summary(): string {
+    return `(${formatNumber(this.x)},${formatNumber(this.y)}) "${this.content}"`
+  }
+
+  // 详情在几何行之外多一行 text 内容
+  override details(): string[] {
+    return [this.geometryLine(), `text="${this.content}"`, ...this.paintLines()]
+  }
+
+  override anchor(): { x: number; y: number } {
+    return { x: this.x, y: this.y }
+  }
+
+  protected override geometryLine(): string {
+    return `x=${formatNumber(this.x)} y=${formatNumber(this.y)}`
   }
 
   override clone(): Text {

@@ -15,16 +15,16 @@ export class Line extends Shape {
     this.x2 = x2
     this.y2 = y2
     this.ownAttrs = {
-      x1: numberAttr('x1', n => {
+      x1: numberAttr('x1', () => this.x1, n => {
         this.x1 = n
       }),
-      y1: numberAttr('y1', n => {
+      y1: numberAttr('y1', () => this.y1, n => {
         this.y1 = n
       }),
-      x2: numberAttr('x2', n => {
+      x2: numberAttr('x2', () => this.x2, n => {
         this.x2 = n
       }),
-      y2: numberAttr('y2', n => {
+      y2: numberAttr('y2', () => this.y2, n => {
         this.y2 = n
       }),
     }
@@ -46,6 +46,19 @@ export class Line extends Shape {
     this.y1 *= f
     this.x2 *= f
     this.y2 *= f
+  }
+
+  override anchor(): { x: number; y: number } {
+    return { x: this.x1, y: this.y1 }
+  }
+
+  // 总结为箭头形式，且无画笔段（line 无 fill 参数，stroke 不内联——commands.md §4.3）
+  override summary(): string {
+    return `(${formatNumber(this.x1)},${formatNumber(this.y1)}) -> (${formatNumber(this.x2)},${formatNumber(this.y2)})`
+  }
+
+  protected override geometryLine(): string {
+    return `x1=${formatNumber(this.x1)} y1=${formatNumber(this.y1)} x2=${formatNumber(this.x2)} y2=${formatNumber(this.y2)}`
   }
 
   override clone(): Line {

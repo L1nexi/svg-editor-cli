@@ -15,16 +15,16 @@ export class Rect extends Shape {
     this.width = width
     this.height = height
     this.ownAttrs = {
-      x: numberAttr('x', n => {
+      x: numberAttr('x', () => this.x, n => {
         this.x = n
       }),
-      y: numberAttr('y', n => {
+      y: numberAttr('y', () => this.y, n => {
         this.y = n
       }),
-      width: numberAttr('width', n => {
+      width: numberAttr('width', () => this.width, n => {
         this.width = n
       }),
-      height: numberAttr('height', n => {
+      height: numberAttr('height', () => this.height, n => {
         this.height = n
       }),
     }
@@ -45,6 +45,14 @@ export class Rect extends Shape {
     this.y *= f
     this.width *= f
     this.height *= f
+  }
+
+  override anchor(): { x: number; y: number } {
+    return { x: this.x, y: this.y }
+  }
+
+  protected override geometryLine(): string {
+    return `x=${formatNumber(this.x)} y=${formatNumber(this.y)} w=${formatNumber(this.width)} h=${formatNumber(this.height)}`
   }
 
   override clone(): Rect {

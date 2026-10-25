@@ -15,16 +15,16 @@ export class Ellipse extends Shape {
     this.rx = rx
     this.ry = ry
     this.ownAttrs = {
-      cx: numberAttr('cx', n => {
+      cx: numberAttr('cx', () => this.cx, n => {
         this.cx = n
       }),
-      cy: numberAttr('cy', n => {
+      cy: numberAttr('cy', () => this.cy, n => {
         this.cy = n
       }),
-      rx: numberAttr('rx', n => {
+      rx: numberAttr('rx', () => this.rx, n => {
         this.rx = n
       }),
-      ry: numberAttr('ry', n => {
+      ry: numberAttr('ry', () => this.ry, n => {
         this.ry = n
       }),
     }
@@ -44,6 +44,14 @@ export class Ellipse extends Shape {
     this.cy *= f
     this.rx *= f
     this.ry *= f
+  }
+
+  override anchor(): { x: number; y: number } {
+    return { x: this.cx, y: this.cy }
+  }
+
+  protected override geometryLine(): string {
+    return `cx=${formatNumber(this.cx)} cy=${formatNumber(this.cy)} rx=${formatNumber(this.rx)} ry=${formatNumber(this.ry)}`
   }
 
   override clone(): Ellipse {

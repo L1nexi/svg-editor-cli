@@ -13,13 +13,13 @@ export class Circle extends Shape {
     this.cy = cy
     this.r = r
     this.ownAttrs = {
-      cx: numberAttr('cx', n => {
+      cx: numberAttr('cx', () => this.cx, n => {
         this.cx = n
       }),
-      cy: numberAttr('cy', n => {
+      cy: numberAttr('cy', () => this.cy, n => {
         this.cy = n
       }),
-      r: numberAttr('r', n => {
+      r: numberAttr('r', () => this.r, n => {
         this.r = n
       }),
     }
@@ -38,6 +38,14 @@ export class Circle extends Shape {
     this.cx *= f
     this.cy *= f
     this.r *= f
+  }
+
+  override anchor(): { x: number; y: number } {
+    return { x: this.cx, y: this.cy }
+  }
+
+  protected override geometryLine(): string {
+    return `cx=${formatNumber(this.cx)} cy=${formatNumber(this.cy)} r=${formatNumber(this.r)}`
   }
 
   override clone(): Circle {

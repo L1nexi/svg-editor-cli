@@ -80,11 +80,11 @@ describe('create 参数解析', () => {
 })
 
 describe('set 白名单', () => {
-  it('公共属性与几何属性可设置', () => {
+  it('公共属性与几何属性可设置，返回旧显示值', () => {
     const r = new Rect('r')
-    expect(r.set('fill', 'red')).toEqual({ ok: true })
-    expect(r.set('stroke-width', '2.5')).toEqual({ ok: true })
-    expect(r.set('x', '5')).toEqual({ ok: true })
+    expect(r.set('fill', 'red')).toEqual({ ok: true, old: '' })
+    expect(r.set('stroke-width', '2.5')).toEqual({ ok: true, old: '' })
+    expect(r.set('x', '5')).toEqual({ ok: true, old: '0' })
     expect(r.x).toBe(5)
   })
 
@@ -102,16 +102,62 @@ describe('set 白名单', () => {
     if (!out.ok) expect(out.error).toBeInstanceOf(BadValueError)
   })
 
-  it('text 内容经 text 属性改写', () => {
+  it('text 内容经 text 属性改写，旧值随结果返回', () => {
     const t = new Text('t', 0, 0, 'a')
-    expect(t.set('text', 'b')).toEqual({ ok: true })
+    expect(t.set('text', 'b')).toEqual({ ok: true, old: 'a' })
     expect(t.content).toBe('b')
   })
 
   it('g 无几何属性，画笔属性仍可设置（统一操作）', () => {
     const g = new Group('g')
     expect(g.set('x', '1').ok).toBe(false)
-    expect(g.set('fill', 'red')).toEqual({ ok: true })
+    expect(g.set('fill', 'red')).toEqual({ ok: true, old: '' })
+  })
+})
+
+describe('显示文本与定位点（command 模块的供货面，ADR-0004 补充裁决）', () => {
+  it('summary：几何 + 已设置的 fill', () => {
+    expect(makeOk('rect', 'r', '10', '20', '100', '50', '#eee').summary()).toBe(
+      'x=10 y=20 w=100 h=50 fill=#eee',
+    )
+    expect(makeOk('rect', 'r', '0', '0', '10', '10').summary()).toBe('x=0 y=0 w=10 h=10')
+  })
+
+  it('summary：line 箭头形式、text 定位加内容形式（逐字锚定）', () => {
+    expect(makeOk('line', 'l', '280', '130', '520', '130', 'black').summary()).toBe(
+      '(280,130) -> (520,130)',
+    )
+    expect(makeOk('text', 't', '155', '135', '开始').summary()).toBe('(155,135) "开始"')
+  })
+
+  it('details：几何一行 + 已设置的画笔属性各一行', () => {
+    expect(makeOk('circle', 'c', '100', '100', '20', 'red').details()).toEqual([
+      'cx=100 cy=100 r=20',
+      'fill=red',
+    ])
+    expect(makeOk('rect', 'r', '0', '0', '10', '10').details()).toEqual(['x=0 y=0 w=10 h=10'])
+    expect(makeOk('line', 'l', '1', '2', '3', '4', 'black').details()).toEqual([
+      'x1=1 y1=2 x2=3 y2=4',
+      'stroke=black',
+    ])
+  })
+
+  it('details：text 多一行内容，g 为 children 行', () => {
+    expect(makeOk('text', 't', '20', '40', 'My Diagram').details()).toEqual([
+      'x=20 y=40',
+      'text="My Diagram"',
+    ])
+    const g = new Group('g')
+    g.addChild(new Rect('a', 0, 0, 1, 1))
+    g.addChild(new Circle('b', 0, 0, 1))
+    expect(g.details()).toEqual(['children=a b'])
+    expect(new Group('empty').details()).toEqual([])
+  })
+
+  it('anchor：各类型的定位点（容器免用）', () => {
+    expect(makeOk('circle', 'c', '100', '100', '20').anchor()).toEqual({ x: 100, y: 100 })
+    expect(makeOk('line', 'l', '1', '2', '3', '4').anchor()).toEqual({ x: 1, y: 2 })
+    expect(new Group('g').anchor()).toEqual({ x: 0, y: 0 })
   })
 })
 
