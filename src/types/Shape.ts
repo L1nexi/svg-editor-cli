@@ -102,6 +102,11 @@ export abstract class Shape {
     }
   }
 
+  // 定位形态 type#id：编辑回显、tree 行标签与 show 首行共用的统一形态（ADR-0004 补充裁决）
+  ref(): string {
+    return `${this.typeName}#${this.id}`
+  }
+
   // 类型级显示文本（ADR-0004 补充裁决）：行内总结——tree 属性行的内联段；
   // 缺省为几何行 + fill（仅已设置时），形式不同的类型覆写
   summary(): string {

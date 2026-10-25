@@ -72,6 +72,7 @@ TimelineEnv  { undo(), redo() }                            undo/redo 命令专�
 - **遍历**：不引入迭代器协议，也不引入回调式 walker。消费者（tree 布局、group 保序收编、show 的 children 行）直接从 `getRoot()` 走 `childrenList()`，`instanceof Group` 判分叉——类型测试而非按名分派。封装边界 = Shape 的公开面：树结构可读，paint 与 ownAttrs 为 protected，变更只能走类型的操作接口。曾考虑的两个方案被否并留档：Visitor（对新增元素类型封闭，与插件演化轴 L293「内核为此新增的代码为 0」相反——本作业的演化轴是新类型，Visitor 开放的是新操作）；回调 walker（服务面只有纯访问类消费方，toSvg 的容器开闭标签与 clone 的树变换本就不在其列，统一收益不抵机制成本）。
 - **类型级显示文本**：`summary()`（行内总结，tree 行内联段）、`details()`（详情行，show 的逐行属性）、`anchor()`（定位点，move 回显与未来命中测试的位置锚点）落在 Shape 层次——与 toSvg 同模式：类型知识在类型上，插件子类覆写即接入（L283 的树形标注即由此携带）。ADR-0002 决策三「types 与 engine 不做文本格式化」据此修订为：**类型级显示文本与 toSvg 同居 types；布局与装配（前缀、对齐、多行组装、词法）归 command/cli**。命名原则：领域语义（总结 / 详情 / 定位点），不按消费方命名（treeAttrs / geometryAttrs 一类被否）。
 - **set 返回旧值**：`SetResult` 携带被替换属性的旧显示值（`old` 字段），作为 backward 文案（锚定样例 `text#title updated: text="My Diagram"`）的取值点。变更操作返回旧值为既有惯例（Map.put 式），三个候选（返回旧值 / 通用读访问器 / 引擎快照拼装）中面最小；旧值知识恰在变更发生处。
+- **定位形态 `ref()`**（2026-10-26 补）：`type#id`（`rect#bg`、`g#markers`）是编辑回显、tree 行标签与 show 首行（L321 `circle#c1  parent=g#markers`）共用的统一定位形态，核实于 tree 三样例（§5.1/§6/§6.1 每行标签）与编辑类 15 处内联，落 Shape 基类，与 summary/details 同模式（类型级显示文本，插件类型免费继承）。`svg` / `g#<原父级>` 的回退目标表述不属此形态，保持调用方装配（未到重构时机，裁决留档）。
 
 ## 后果与权衡
 
