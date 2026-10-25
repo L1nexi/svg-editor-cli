@@ -17,7 +17,7 @@ export class ReadCommand extends DocumentCommand {
     const path = args[0]!
     const loaded = env.loadDocument(path)
     if (!loaded.ok) return loaded
-    env.replaceDocument(loaded.value.canvas)
+    env.replaceDocument(loaded.value.canvas, path)
     const forward = `read ${path} (${loaded.value.canvas.count()} elements)`
     return Ok(new ReadPayload(forward, loaded.value.warnings))
   }

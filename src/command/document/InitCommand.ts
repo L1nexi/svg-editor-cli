@@ -18,7 +18,7 @@ export class InitCommand extends DocumentCommand {
     const size = this.parseDimensions(args)
     if (!size.ok) return size
     const { width, height } = size.value ?? { width: 800, height: 600 }
-    env.replaceDocument(new Canvas(width, height))
+    env.replaceDocument(new Canvas(width, height), null)
     return Ok(new Payload(`canvas ${formatNumber(width)}x${formatNumber(height)} created`))
   }
 }
