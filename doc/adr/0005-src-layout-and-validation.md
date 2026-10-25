@@ -1,0 +1,55 @@
+# ADR-0005：src 目录收拢与命令层校验下沉
+
+- **状态**：已接受（Accepted）
+- **日期**：2026-10-26
+- **关联**：修订 ADR-0003（测试与被测文件同目录条款）、修订 ADR-0004（`src/command/` 平铺布局）；作业 §2.1（实现范式）、§4.2/§6（文案保真）
+
+## 背景
+
+编辑类 10 条命令落地后、undo/redo 与显示类、文档类落地前的重构窗口，暴露三类问题：
+
+- **命令体重复**：`findById` + 判空 + 构造失败对象 12 处，`args.length` 检查 + 构造 `InvalidArgumentsError` 10 处——同一策略逐字复制；
+- **测试散落**：4 个测试文件放在 src 各模块内部，交付代码与质量工件混在一起；
+- **目录失效**：`command/`（20 文件）、`errors/`（16 文件）、`types/`（13 文件）平铺，目录名不再传达结构信息。
+
+## 决策一：src 内部分层（只收拢，不改五模块边界）
+
+ADR-0002 的五模块划分不变，收拢发生在模块内部：
+
+```text
+src/
+  command/
+    base/        Command / UndoableCommand / DocumentCommand + 三域 env + 载荷 DTO
+    edit/        编辑类 10 条
+    timeline/    undo / redo（随 engine 批次建立，不预建空目录）
+    display/     tree / show / help（随显示类批次建立）
+    document/    init / read / save / canvas（随文档类批次建立）
+  errors/
+    DomainError.ts / Result.ts / index.ts     ← 根部 = 结果契约与错误基类
+    validation/  输入不合式：InvalidArguments / BadNumber / BadValue / UnknownAttr / ScaleFactor / UnknownShapeType
+    hierarchy/   树关系不满足：NotAContainer / CannotGroupIntoDescendant / CannotUngroupComposite / CannotUngroupTopLevel
+    entity/      实体存在性：NoSuchShape / NoSuchContainer / IdExists
+  types/
+    Canvas.ts / num.ts / builtins.ts          ← 根部 = 聚合根、数值工具、注册清单
+    base/        Shape / ShapeProvider / ShapeFactory（抽象与契约）
+    shapes/      内置六类型实现
+```
+
+错误三分类的裁决线：**validation** = 输入本身不合式（构不成合法实体）；**entity** = 寻址失败（目标不存在或 id 冲突）；**hierarchy** = 目标存在但树上的关系不满足。
+
+## 决策二：测试收拢至 `tests/`（修订 ADR-0003）
+
+`tests/` 镜像 `src/` 模块结构（`tests/command/`、`tests/errors/`、`tests/types/`）；`tsconfig.json` include 增补 `tests`，typecheck 继续覆盖测试代码；vitest 默认 glob 即可发现，零配置立场不变。ADR-0003 的「测试文件与被测文件同目录」条款自此废止：src 只留交付代码。
+
+## 决策三：校验下沉（消除命令体重复）
+
+1. **参数个数声明化 + 模板方法**：`Command` 基类新增 `minArgs` / `maxArgs`（null = 上不封顶）/ `usage` 三个声明字段与公开入口 `run()`——`run` 先按声明校验参数个数，再调 `execute`；`execute` 收窄为 protected。usage 串是 spec 文案（P：语法去命令名），由十处逻辑复制变为声明数据，`InvalidArgumentsError` 在基类单点构造。create 的 `in` 尾缀检查属语法结构而非参数个数，留在命令内。
+2. **find-or-fail 下沉 Canvas**：`requireShape(id)`（缺失报 no such shape）与 `requireContainer(id)`（缺失报 no such container、存在但为叶子报 not a container，二连判别）作为领域方法挂在聚合根上；命令体统一为 `const found = …; if (!found.ok) return found`。
+3. **评估后不收**（阈值：≥3 处且有净收益）：`parseNumber` + `BadNumberError` 包裹（3 处，包裹后行数无净减）；`requireFreeId`（id 冲突检查仅 2 处）；ungroup 不改用 `requireContainer`——其缺失目标报 no such shape（spec 基线），错误优先级与 requireContainer 不同。
+
+## 后果与合规
+
+- 分派白名单仍为命令注册表 + 图形工厂两处，无新增分派点；
+- 全部 `error:` 与成功回显文案零变化（锚定单测逐字断言原样通过）；
+- 失败无副作用不变：校验发生在触碰画布状态之前，或走返回 Err 值的路径；
+- 一类一文件不变：本轮新增的是基类字段与方法，不是新类。

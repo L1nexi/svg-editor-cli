@@ -1,6 +1,7 @@
+import { Err, NoSuchContainerError, NoSuchShapeError, NotAContainerError, Ok, type Result } from '../errors'
 import { formatNumber } from './num'
-import { Group } from './Group'
-import { Shape } from './Shape'
+import { Group } from './shapes/Group'
+import { Shape } from './base/Shape'
 
 // 画布（ADR-0002 决策一）：长宽标量 + 无 id 的根容器；engine 状态时间线的单元
 export class Canvas {
@@ -23,6 +24,20 @@ export class Canvas {
   // 根无 id（''），findId 的自查对任何可寻址 id（非空 token）都不命中，整体委托树遍历
   findById(id: string): Shape | null {
     return this.root.findId(id)
+  }
+
+  // find-or-fail 家族（ADR-0005 决策三）：命令层参数寻址的统一入口，
+  // 失败对象（no such shape / no such container / not a container）在此单点构造
+  requireShape(id: string): Result<Shape> {
+    const s = this.findById(id)
+    return s === null ? Err(new NoSuchShapeError(id)) : Ok(s)
+  }
+
+  // 存在性与容器判别二连：缺失报 no such container，存在但为叶子报 not a container
+  requireContainer(id: string): Result<Group> {
+    const s = this.findById(id)
+    if (s === null) return Err(new NoSuchContainerError(id))
+    return s instanceof Group ? Ok(s) : Err(new NotAContainerError(id))
   }
 
   // ungroup 顶层容器拒绝的判据

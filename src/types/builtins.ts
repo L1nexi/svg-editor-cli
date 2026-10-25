@@ -1,10 +1,10 @@
-import { ShapeFactory } from './ShapeFactory'
-import { circleProvider } from './Circle'
-import { ellipseProvider } from './Ellipse'
-import { groupProvider } from './Group'
-import { lineProvider } from './Line'
-import { rectProvider } from './Rect'
-import { textProvider } from './Text'
+import { ShapeFactory } from './base/ShapeFactory'
+import { circleProvider } from './shapes/Circle'
+import { ellipseProvider } from './shapes/Ellipse'
+import { groupProvider } from './shapes/Group'
+import { lineProvider } from './shapes/Line'
+import { rectProvider } from './shapes/Rect'
+import { textProvider } from './shapes/Text'
 
 // 内置六类型注册；Map 覆盖写保证重复调用幂等
 export function registerBuiltins(): void {
