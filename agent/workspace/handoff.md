@@ -7,6 +7,7 @@
 - 架构裁决齐：ADR-0001～0005（0005 已由用户提交：`1f36cb1` 测试收拢 + `a5e6383` src 收拢与校验下沉）。
 - **命令模块 17/19 落地**：编辑类 10（已提交）+ 文档类 4（`command/document/`：Init/Read/Save/Canvas）+ 显示类 3（`command/display/`：Tree/Show/Help）——后两批待用户提交。undo/redo 尚未落地，随 engine 批次。
 - 94 单测全绿 + typecheck 干净。tree 对齐公式（max(前缀宽+ref宽)+2）对 §5.1 样例逐字命中；§6.1 手排差 3 列按公式执行。
+- **smell 清扫轮（待提交）**：参数个数声明改为允许个数表 `argCounts`（`MANY` 尾位 = 上不封顶，abstract 无默认）；init/canvas 尺寸解析沉 `DocumentCommand.parseDimensions`；测试脚手架收 `tests/helpers.ts`；`?` 手感评估后不收（详见 `agent/history/2026-10-26-smell-sweep.md` 与 ADR-0005 修订）。
 - 两轴审查通过，采纳三条：ADR-0005 补 NoSavePathError 归类留痕、display.test 节号 §6→§5.1、Line.summary 补 fill 内联（§4.3 字面）。Declined 留观察：Init/Canvas 九行重复（2 处）、测试脚手架 okRun/fail 三份（签名有真实差异）。
 - `agent/history/2026-10-26-display-doc-commands.md` 留痕；doc/README 修订记录已更新。
 
@@ -14,7 +15,7 @@
 
 1. **先声明改动面**（惯例）。预期内容：
    - `command/base/TimelineCommand`？——**不设**：ADR-0004 定稿 undo/redo 直挂 Command；engine 路由的时间线分支用具体类 instanceof（UndoCommand/RedoCommand）。
-   - `command/timeline/`：UndoCommand/RedoCommand 外壳（TimelineEnv.undo/redo 透传；min/max=0，usage `no parameters`）。
+   - `command/timeline/`：UndoCommand/RedoCommand 外壳（TimelineEnv.undo/redo 透传；`argCounts = [0]`，usage `no parameters`）。
    - `engine/`：注册表（白名单第一处，维持待重构标注）+ 无文档守卫（needsDocument）+ 四分支按类路由 + 时间线（链首/边/游标；文档类成功 ⇒ 重建为仅链首）+ 三 env 实现。
    - 错误类 4 个：UnknownCommandError、NoDocumentError（均 entity/）+ UndoNotAllowedAfterIoError、NothingToRedoError（「要走的边不存在」，暂归 entity/，声明时定）。
    - **ADR-0004 决策四补一句实现注记**：时间线重建绑定在变更型 env 方法（replaceDocument/resizeCanvas/saveDocument）的实现上——canvas 无参只读是文档类中唯一不重建者（spec §4.1），方法键控使其自然成立。
