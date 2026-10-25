@@ -13,6 +13,7 @@
 | 错误行 | 前缀 `error: `，一行一条；命令失败不改变任何状态 （L146） |
 | 警告行 | 前缀 `warning: `，不使命令失败 （L143） |
 | 注释 | 行首 `#` 的行整行忽略 （L141，§6.1 脚本内有注释行） |
+| 空行 | 静默，重新提示 P |
 | 分词 | 空格切分；含空格参数用双引号包裹 （L145）；`\"` 为字面双引号（Q7，P） |
 | 无文档守卫 | 除 init / read 外，未 init/read 前任何命令报 `error: no document. use 'init' or 'read' first`（L246） |
 | 多错误判定序 | cli 语法 → 命令参数（个数、数值）→ 引擎语义（id、容器、环），报第一条（Q4 裁决） |
@@ -114,19 +115,19 @@
 - 语义：新建容器并收编，从各自原父容器摘出、保持原树相对顺序（裁决，参数序 ≠ 树序时按树序）；目标 ≥ 2 **P**（按语法字面）；重复目标忽略多余出现 **P**。
 - forward：`g#markers created with 2 children`（L356）。
 - backward：`g#markers dissolved, 2 children restored` **P**（Q10）。
-- 失败：id already exists （newGid 冲突）；no such shape （目标）；`error: cannot group a container into its own descendant: g1`（L242）。
+- 失败：id already exists （newGid 冲突）；no such shape （目标）；`error: cannot group a container into its own descendant: g1`（L242；触发 = 目标同时含某容器与其子孙，报容器 id）。
 
 **ungroup** `ungroup <gid>`
 - 语义：解散容器，子图形提升到原容器的父级、占据原容器的位置 （L181）；根级容器拒绝 （L243）；插件复合类型拒绝（本阶段不可达，插槽预留）（L241）。
 - forward：`g#markers dissolved, 2 children moved to g#node1` **P**（原父级为顶层 → `moved to svg`）。
 - backward：`g#markers restored with 2 children` **P**（镜像 group 正向）。
-- 失败：no such shape ；`error: cannot ungroup top-level container: scene`（L243）；`error: cannot ungroup composite shape: n1`（L241）。
+- 失败：no such shape ；目标为叶子 → `error: not a container: <id>`（复用 L239）；`error: cannot ungroup top-level container: scene`（L243）；`error: cannot ungroup composite shape: n1`（L241）。
 
 **addto** `addto <gid> <id>`
 - 语义：把已有图形移入容器，作为最后一个子节点 （L182）；容器移入自身子孙同样拒绝（复用 group 环文案）**P**。
 - forward：`circle#c1 moved into g#markers` **P**。
 - backward：`circle#c1 moved back into svg` **P**（原父级为顶层 → `svg`，否则 `g#<原父级>`）。
-- 失败：no such shape （id）；no such container / not a container （gid）；环 → cannot group a container into its own descendant （复用）。
+- 失败：no such shape （id）；no such container / not a container （gid）；环（把容器移入其子孙）→ cannot group a container into its own descendant （复用）。
 
 **front / back** `front <id>` / `back <id>`
 - 语义：同级最前/最后 （L183）。
@@ -181,10 +182,10 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 | `error: id already exists: <id>` | L236 | create / group 的 id 冲突 |
 | `error: no such shape: <id>` | L237 | 按 id 寻址落空（含 tree/show/front/back/delete/move/scale/set/addto 的目标） |
 | `error: no such container: <id>` | L238 | in / group(收编容器?) / addto 的容器目标不存在 |
-| `error: not a container: <id>` | L239 | 容器目标是叶子 |
+| `error: not a container: <id>` | L239 | create in / addto / ungroup 的容器目标是叶子 |
 | `error: unknown shape type: <type> (is the plugin loaded?)` | L240 | create 未注册类型 |
 | `error: cannot ungroup composite shape: <id>` | L241 | ungroup 插件复合类型（本阶段不可达，插槽预留） |
-| `error: cannot group a container into its own descendant: <id>` | L242 | group / addto 环检测 |
+| `error: cannot group a container into its own descendant: <id>` | L242 | group 目标同时含某容器与其子孙（报容器 id）；addto 把容器移入其子孙 |
 | `error: cannot ungroup top-level container: <id>` | L243 | ungroup 根级容器 |
 | `error: scale factor must be positive` | L244 | scale 非正 factor |
 | `error: cannot read file: <path>` / `error: cannot write file: <path>` | L245 | 文件不可读 / 不可写 |
@@ -195,9 +196,11 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 | `error: invalid number for <param>: <value>` | P | 位置参数数值解析失败 |
 | `error: invalid value for <attr>: <value>` | P | set 数值属性非数值；init/canvas 尺寸非正 |
 | `error: no save path: document came from init` | P | save 无参且文档来自 init（Q3） |
+| `error: unknown command: <name>` | P | 注册表未登记的命令名 |
 
 警告侧：`warning: assigned id rect1 to unnamed <rect>` ；重复 id 改名、transform 降级两变体 **P**（§4.1 read）。
 
 ## 7. 修订记录
 
 - 2026-10-25 v1：随 ADR-0004 立表。锚定文案自作业 §2/§3/§4.2/§5/§6/§6.1 逐字录入；提案文案为命令层设计讨论的基线；Q13 裁决（时间线截断）与本表 §2 绑定。
+- 2026-10-25 v1.1：ungroup 目标为叶子复用 `not a container`（L239，同日裁决）；group / addto 环触发条件按原文表意精化；补 unknown command 与空行两条 P（作业未规定）。
