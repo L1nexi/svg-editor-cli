@@ -6,13 +6,13 @@
 
 | 路径               | 用途                                                  | 约束                                             |
 | ------------------ | ----------------------------------------------------- | ------------------------------------------------ |
-| `assignment/`      | 作业原文（唯一外部输入）                              | 只读，不得修改；行号引用以 `phase_cli_1.md` 为准 |
+| `doc/assignment/`  | 作业原文（唯一外部输入）                              | 只读，不得修改；行号引用以 `phase_cli_1.md` 为准 |
 | `doc/README.md`    | 作业交付文档（架构方案/过程记录/一致性自查/质量保证） | 交付物；没做完就标 TODO，不许装完成              |
 | `doc/spec/`        | 正式规格：需求分析、命令-行为-文案规范表              | 代码与 spec 冲突时：修代码，或先改 spec 并留痕   |
 | `doc/adr/`         | 架构决策记录（ADR）                                   | 结构性决策必须先立 ADR 再动代码                  |
 | `agent/history/`   | 与 AI 协作的完整过程记录                              | 关键讨论、AI 产出问题与纠正，只追加不改写        |
 | `agent/workspace/` | Agent 持久记忆交接                                    | 会话结束前更新 `workspace/handoff.md`            |
-| `src/`             | 源码（待建）                                          | 写法约束见下节                                   |
+| `src/`             | 源码（types 已落地；cli/command/engine/io 待建）      | 写法约束见下节                                   |
 
 ## 硬性规则（源自作业）
 
@@ -26,6 +26,8 @@
 8. **文档同步**：实际目录/依赖与 spec 不一致时，当次提交内先更新 spec 或记入 `doc/README.md` 修订记录（L124）。
 9. **协作留痕**：AI 产出的关键纠错与讨论进 `agent/history/`；由此产生的结构性决策进 `doc/adr/`。
 
+仓库本地约定（非作业要求）：代码与注释中不写作业行号（Ln）——行号引用只出现在 `doc/` 文档里，代码注释指向 spec 表或 ADR。
+
 ## 工作循环（建议）
 
 1. 读 `assignment/phase_cli_1.md`（原文）与 `doc/spec/assignment-analysis.md`（需求分析，含 open questions 的裁决状态）；
@@ -36,7 +38,12 @@
 
 ## 构建与运行
 
-工程尚未初始化：没有 package.json，没有 `src/`。下面是作业约定的目标形态，跑通之前不要当成可用命令引用。
+- `npm install`：安装依赖（首次）
+- `npm run cli`：启动 REPL（当前为占位入口，REPL 未实现；作业 L329 的入口约定）
+- `npm test` / `npm run test:watch`：Vitest（ADR-0003）
+- `npm run typecheck`：tsc --noEmit（strict 全开）
 
-- `npm run cli`：启动 REPL（作业 L329 的入口约定）
-- `npm test`：测试（框架选型待 ADR 裁决）
+## 推荐 SKILL 与 Workflow
+
+- 正式实施代码时：参考 codebase-design 技能；参考 TDD 的测试样例例子，无需按照 TDD 规范做红绿循环。
+- 代码实施结束后：使用 code-review 技能自查；随后知会用户最值得关注的点
