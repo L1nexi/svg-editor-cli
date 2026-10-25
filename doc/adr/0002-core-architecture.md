@@ -32,9 +32,10 @@ command  19 个命令的参数 schema 与命令对象（数据，不含行为）
 engine   文档时间线、校验链、命令分发注册表与执行编排
 types    Shape 基类 + 6 个具体类 + 注册制工厂 + Canvas（画布 + 根容器 + 克隆）
 io       SVG 读写；XML 库隔离在此；读入警告作为返回值数据
+errors   全部 error: 文案的目录：错误对象自行 format，一条文案一个类一个测试（C5 审计点）
 ```
 
-依赖方向（无环）：types 不依赖任何模块；io、command → types；engine → types、io、command；cli → command、engine。
+依赖方向（无环）：errors 不依赖任何模块；types → errors；io、command → types；engine → types、io、command；cli → command、engine。
 
 - 校验链：cli 语法错 → command 参数校验 → engine 语义校验（id 存在性、容器合法性、scale 正数）。多错误叠加按链条顺序报第一条。
 - 工厂是 L155 允许的第二处分派（类型名 → 类），注册制，6 个内置类型自注册；ShapeProvider 接口形状现在定义，外部加载不做（作业 §4.4 为插件化阶段目标）。
