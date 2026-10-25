@@ -1,6 +1,6 @@
 import { escapeXml, Shape } from './Shape'
 import { type ShapeProvider } from './ShapeProvider'
-import { InvalidArgumentsError } from '../errors'
+import { Err, InvalidArgumentsError, Ok } from '../errors'
 
 export class Group extends Shape {
   private children: Shape[] = []
@@ -112,9 +112,9 @@ export const groupProvider: ShapeProvider = {
   typeName: 'g',
   fromArgs(id, args) {
     if (args.length !== 0) {
-      return { ok: false, error: new InvalidArgumentsError('no parameters') }
+      return Err(new InvalidArgumentsError('no parameters'))
     }
-    return { ok: true, shape: new Group(id) }
+    return Ok(new Group(id))
   },
   fromAttrs(id, attrs) {
     const g = new Group(id)

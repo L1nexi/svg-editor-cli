@@ -14,7 +14,7 @@ function makeOk(type: string, id: string, ...args: string[]) {
   if (p === null) throw new Error(`provider 未注册: ${type}`)
   const r = p.fromArgs(id, args)
   if (!r.ok) throw new Error(`fromArgs 失败: ${r.error.format()}`)
-  return r.shape
+  return r.value
 }
 
 describe('图形工厂（第二处按名分派）', () => {
@@ -82,9 +82,9 @@ describe('create 参数解析', () => {
 describe('set 白名单', () => {
   it('公共属性与几何属性可设置，返回旧显示值', () => {
     const r = new Rect('r')
-    expect(r.set('fill', 'red')).toEqual({ ok: true, old: '' })
-    expect(r.set('stroke-width', '2.5')).toEqual({ ok: true, old: '' })
-    expect(r.set('x', '5')).toEqual({ ok: true, old: '0' })
+    expect(r.set('fill', 'red')).toEqual({ ok: true, value: '' })
+    expect(r.set('stroke-width', '2.5')).toEqual({ ok: true, value: '' })
+    expect(r.set('x', '5')).toEqual({ ok: true, value: '0' })
     expect(r.x).toBe(5)
   })
 
@@ -104,14 +104,14 @@ describe('set 白名单', () => {
 
   it('text 内容经 text 属性改写，旧值随结果返回', () => {
     const t = new Text('t', 0, 0, 'a')
-    expect(t.set('text', 'b')).toEqual({ ok: true, old: 'a' })
+    expect(t.set('text', 'b')).toEqual({ ok: true, value: 'a' })
     expect(t.content).toBe('b')
   })
 
   it('g 无几何属性，画笔属性仍可设置（统一操作）', () => {
     const g = new Group('g')
     expect(g.set('x', '1').ok).toBe(false)
-    expect(g.set('fill', 'red')).toEqual({ ok: true, old: '' })
+    expect(g.set('fill', 'red')).toEqual({ ok: true, value: '' })
   })
 })
 

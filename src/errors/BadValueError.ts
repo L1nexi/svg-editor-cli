@@ -1,6 +1,6 @@
 import { DomainError } from './DomainError'
 
-// set 白名单内属性收到非法数值；文案待行为表定稿（spec 缺口）
+// 白名单属性 / 尺寸参数的数值非法；文案属 doc/spec/commands.md §6（P 档）
 export class BadValueError extends DomainError {
   constructor(
     private readonly attr: string,

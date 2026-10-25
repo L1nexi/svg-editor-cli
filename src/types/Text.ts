@@ -1,7 +1,7 @@
 import { attrNumber, formatNumber } from './num'
 import { type AttrSetter, escapeXml, numberAttr, Shape, stringAttr } from './Shape'
 import { numsOr, type ShapeProvider } from './ShapeProvider'
-import { InvalidArgumentsError } from '../errors'
+import { Err, InvalidArgumentsError, Ok } from '../errors'
 
 export class Text extends Shape {
   x: number
@@ -77,11 +77,11 @@ export const textProvider: ShapeProvider = {
   typeName: 'text',
   fromArgs(id, args) {
     if (args.length !== 3) {
-      return { ok: false, error: new InvalidArgumentsError('x y "content"') }
+      return Err(new InvalidArgumentsError('x y "content"'))
     }
     const nums = numsOr(args.slice(0, 2), ['x', 'y'])
     if (!nums.ok) return nums
-    return { ok: true, shape: new Text(id, nums.nums[0], nums.nums[1], args[2]!) }
+    return Ok(new Text(id, nums.value[0], nums.value[1], args[2]!))
   },
   fromAttrs(id, attrs, textContent) {
     return new Text(id, attrNumber(attrs['x']), attrNumber(attrs['y']), textContent ?? '')

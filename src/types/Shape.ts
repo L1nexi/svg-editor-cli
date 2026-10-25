@@ -1,21 +1,17 @@
 import { formatNumber, parseNumber } from './num'
 import type { Group } from './Group'
-import { BadValueError, UnknownAttrError, type DomainError } from '../errors'
+import { BadValueError, UnknownAttrError, Err, Ok, type Result } from '../errors'
 
-// set 的结果：old 为被替换属性的旧显示值（backward 文案的取值点，ADR-0004 补充裁决）；
-// 错误为正式对象、自行 format（src/errors/），随结果返回而非抛出——引擎丢弃克隆即状态不变
-export type SetResult = { ok: true; old: string } | { ok: false; error: DomainError }
-
-// 各类几何属性的声明式白名单：属性名 → 字符串值处理器（返回旧显示值）
-export type AttrSetter = (value: string) => SetResult
+// 各类几何属性的声明式白名单：属性名 → 字符串值处理器（成功值为被替换属性的旧显示值）
+export type AttrSetter = (value: string) => Result<string>
 
 export function numberAttr(attr: string, get: () => number, apply: (n: number) => void): AttrSetter {
   return value => {
     const n = parseNumber(value)
-    if (n === null) return { ok: false, error: new BadValueError(attr, value) }
+    if (n === null) return Err(new BadValueError(attr, value))
     const old = formatNumber(get())
     apply(n)
-    return { ok: true, old }
+    return Ok(old)
   }
 }
 
@@ -23,7 +19,7 @@ export function stringAttr(get: () => string, apply: (s: string) => void): AttrS
   return value => {
     const old = get()
     apply(value)
-    return { ok: true, old }
+    return Ok(old)
   }
 }
 
@@ -69,27 +65,28 @@ export abstract class Shape {
     return 1
   }
 
-  // set 白名单：公共属性在此处理，几何属性查子类声明表；查不到即白名单外
-  set(attr: string, value: string): SetResult {
+  // set 白名单：公共属性在此处理，几何属性查子类声明表，查不到即白名单外；
+  // 成功值为旧显示值（backward 文案的取值点，ADR-0004 补充裁决）——错误为正式对象随结果返回，引擎丢弃克隆即状态不变
+  set(attr: string, value: string): Result<string> {
     if (attr === 'fill') {
       const old = this.fill ?? ''
       this.fill = value
-      return { ok: true, old }
+      return Ok(old)
     }
     if (attr === 'stroke') {
       const old = this.stroke ?? ''
       this.stroke = value
-      return { ok: true, old }
+      return Ok(old)
     }
     if (attr === 'stroke-width') {
       const n = parseNumber(value)
-      if (n === null) return { ok: false, error: new BadValueError(attr, value) }
+      if (n === null) return Err(new BadValueError(attr, value))
       const old = this.strokeWidth !== null ? formatNumber(this.strokeWidth) : ''
       this.strokeWidth = n
-      return { ok: true, old }
+      return Ok(old)
     }
     const setter = this.ownAttrs[attr]
-    return setter ? setter(value) : { ok: false, error: new UnknownAttrError(attr) }
+    return setter ? setter(value) : Err(new UnknownAttrError(attr))
   }
 
   // 公共画笔属性的批量载入（create 可选参数与 XML 读回两条路径共用）；键缺失即跳过

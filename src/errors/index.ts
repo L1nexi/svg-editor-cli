@@ -1,14 +1,16 @@
-export { DomainError } from './DomainError'
-export { UnknownAttrError } from './UnknownAttrError'
-export { BadValueError } from './BadValueError'
-export { BadNumberError } from './BadNumberError'
-export { InvalidArgumentsError } from './InvalidArgumentsError'
-export { IdExistsError } from './IdExistsError'
-export { NoSuchShapeError } from './NoSuchShapeError'
-export { NoSuchContainerError } from './NoSuchContainerError'
-export { NotAContainerError } from './NotAContainerError'
-export { UnknownShapeTypeError } from './UnknownShapeTypeError'
-export { ScaleFactorError } from './ScaleFactorError'
-export { CannotUngroupCompositeError } from './CannotUngroupCompositeError'
-export { CannotGroupIntoDescendantError } from './CannotGroupIntoDescendantError'
-export { CannotUngroupTopLevelError } from './CannotUngroupTopLevelError'
+export { DomainError } from "./DomainError";
+export type { Result } from "./Result";
+export { Ok, Err } from "./Result";
+export { UnknownAttrError } from "./UnknownAttrError";
+export { BadValueError } from "./BadValueError";
+export { BadNumberError } from "./BadNumberError";
+export { InvalidArgumentsError } from "./InvalidArgumentsError";
+export { IdExistsError } from "./IdExistsError";
+export { NoSuchShapeError } from "./NoSuchShapeError";
+export { NoSuchContainerError } from "./NoSuchContainerError";
+export { NotAContainerError } from "./NotAContainerError";
+export { UnknownShapeTypeError } from "./UnknownShapeTypeError";
+export { ScaleFactorError } from "./ScaleFactorError";
+export { CannotUngroupCompositeError } from "./CannotUngroupCompositeError";
+export { CannotGroupIntoDescendantError } from "./CannotGroupIntoDescendantError";
+export { CannotUngroupTopLevelError } from "./CannotUngroupTopLevelError";

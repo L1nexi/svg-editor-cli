@@ -1,6 +1,6 @@
 import { DomainError } from './DomainError'
 
-// create 位置参数数值非法；文案待行为表定稿（spec 缺口）
+// 位置参数数值非法；文案属 doc/spec/commands.md §1「数值输入」（P 档）
 export class BadNumberError extends DomainError {
   constructor(
     private readonly param: string,

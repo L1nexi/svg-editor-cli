@@ -1,6 +1,6 @@
 import { DomainError } from './DomainError'
 
-// 参数个数不符；expected 为该类型的用法片段，文案待行为表定稿（spec 缺口）
+// 参数个数不符；expected 为 usage 片段（create 各类型的串见 doc/spec/commands.md §5，P 档）
 export class InvalidArgumentsError extends DomainError {
   constructor(private readonly expected: string) {
     super()
