@@ -4,17 +4,21 @@
 
 ## 当前状态（2026-10-25）
 
-- 需求分析完成（`doc/spec/assignment-analysis.md`）；仓库按 ADR-0001 组织
-- 核心架构已裁决（ADR-0002）：Command + Composite + Memento，以状态时间线 + 游标实现（整树深拷贝、redo 存后向、undo 后新编辑截断尾部）；内部坐标扁平化（read 展开 translate/scale，其他 transform 变体警告降级）；五模块 cli / command / engine / types / io 及依赖方向；XML 解析用 @xmldom/xmldom，序列化自拼字符串
-- TypeScript 工程尚未初始化（无 package.json / src/）
+- 架构裁决齐：ADR-0001（仓库结构）、ADR-0002（模式三件套/状态时间线、扁平坐标、五模块、xmldom）、ADR-0003（Vitest）
+- **types 模块已落地并测试通过**：`src/types/` 12 个文件（Shape 基类 + 5 叶子 + Group + Canvas + ShapeProvider/ShapeFactory/builtins/num），34 个单测全绿，`npm run typecheck` 过（strict 全开）
+- **errors 模块已落地**（ADR-0002 模块表新增）：错误为正式对象、自行 format、值语义随结果返回；一条文案一个类一个测试；`src/errors/` 4 个错误类 + DomainError 基类
+- 工程初始化完成：package.json（type: module）、tsconfig（strict + noUncheckedIndexedAccess）、`npm run cli` 为占位入口
+- cli / command / engine / io 模块未建；`doc/spec/commands.md` 行为表未写
 
 ## 下一步
 
-1. 写命令行为表 `doc/spec/commands.md`：19 条命令的语法、语义、逐字回显/警告/错误文案、undo 粒度。spec 只写行为，不写实现；素材 = 作业 §3/§4/§5/§6 + 分析文档 §3.3 可推导细节
-2. 测试框架小 ADR（倾向 Vitest）+ transcript 端到端验收形态
-3. 初始化 TS 工程（入口 `npm run cli`），按 `AGENTS.md` 工作循环走：实现前先声明改动面
+1. `command` 模块：19 个命令对象（参数 schema + 命令数据）、tree/show 格式化函数（按 ADR-0002 并入 command）
+2. `engine` 模块：Canvas 状态时间线 + 游标、校验链（cli 语法 → command 参数 → engine 语义）、命令分发注册表；io 冻结语义（L251）
+3. `cli` 模块：REPL、行解析（含双引号词法——实现前先把转义规则写进行为表）、提示符、打印
+4. `io` 模块：@xmldom/xmldom 解析 + Canvas.toSvg 落盘；缺 id 自动补与警告、transform 展开（translate/scale）
+5. spec 先行：`doc/spec/commands.md` 行为表（语法/语义/逐字文案/undo 粒度），实现严格对照
 
 ## 未决问题
 
-- spec 级：分析文档 Q1 / Q3 / Q5 / Q6 / Q7 / Q8 / Q9 / Q10；新增「空历史时 undo/redo 报错文案」（随行为表写死）
-- 工程级：Node 版本 / ESM·CJS / 包管理器，初始化时定
+- spec 级（随行为表写死）：Q1/Q3/Q5/Q6/Q7/Q8/Q9/Q10；新增「参数个数错误与数值解析失败的报错文案」「空历史时 undo/redo 报错文案」
+- 工程级：Node 版本声明（engines）/ 包管理器锁文件策略，提交前定
