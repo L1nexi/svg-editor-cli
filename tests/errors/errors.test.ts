@@ -13,7 +13,7 @@ import {
   ScaleFactorError,
   UnknownAttrError,
   UnknownShapeTypeError,
-} from './index'
+} from '../../src/errors'
 
 // C5 审计点：每条 error: 文案 ↔ 一个类 ↔ 一个断言；spec 已锚定的逐字断言，未锚定的记录提案
 describe('错误对象自 format', () => {

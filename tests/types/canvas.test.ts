@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Canvas } from './Canvas'
-import { registerBuiltins } from './builtins'
-import { Circle } from './Circle'
-import { Group } from './Group'
-import { Rect } from './Rect'
+import { Canvas } from '../../src/types/Canvas'
+import { registerBuiltins } from '../../src/types/builtins'
+import { Circle } from '../../src/types/shapes/Circle'
+import { Group } from '../../src/types/shapes/Group'
+import { Rect } from '../../src/types/shapes/Rect'
 
 beforeAll(() => registerBuiltins())
 
@@ -38,6 +38,28 @@ describe('Canvas 查询', () => {
     expect(c.isTopLevel(c1)).toBe(false)
     expect(c.hasAncestor(c1, markers)).toBe(true)
     expect(c.hasAncestor(markers, c1)).toBe(false)
+  })
+})
+
+describe('find-or-fail（ADR-0005 决策三）', () => {
+  it('requireShape：命中返回值，缺失报 no such shape', () => {
+    const c = demoCanvas()
+    const r = c.requireShape('c1')
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.value.typeName).toBe('circle')
+    const miss = c.requireShape('nope')
+    if (miss.ok) throw new Error('意外成功')
+    expect(miss.error.format()).toBe('error: no such shape: nope')
+  })
+
+  it('requireContainer：容器命中，缺失与叶子两连判别', () => {
+    const c = demoCanvas()
+    expect(c.requireContainer('markers').ok).toBe(true)
+    const missing = c.requireContainer('nope')
+    const leaf = c.requireContainer('c1')
+    if (missing.ok || leaf.ok) throw new Error('意外成功')
+    expect(missing.error.format()).toBe('error: no such container: nope')
+    expect(leaf.error.format()).toBe('error: not a container: c1')
   })
 })
 

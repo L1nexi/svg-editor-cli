@@ -1,11 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { BadNumberError, BadValueError, InvalidArgumentsError } from '../errors'
-import { registerBuiltins } from './builtins'
-import { Circle } from './Circle'
-import { Group } from './Group'
-import { Rect } from './Rect'
-import { ShapeFactory } from './ShapeFactory'
-import { Text } from './Text'
+import { BadNumberError, BadValueError, InvalidArgumentsError } from '../../src/errors'
+import { registerBuiltins } from '../../src/types/builtins'
+import { Circle } from '../../src/types/shapes/Circle'
+import { Group } from '../../src/types/shapes/Group'
+import { Rect } from '../../src/types/shapes/Rect'
+import { ShapeFactory } from '../../src/types/base/ShapeFactory'
+import { Text } from '../../src/types/shapes/Text'
 
 beforeAll(() => registerBuiltins())
 

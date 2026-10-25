@@ -1,23 +1,23 @@
 import { describe, expect, it, beforeAll } from 'vitest'
-import { Circle } from '../types/Circle'
-import { Canvas } from '../types/Canvas'
-import { Group } from '../types/Group'
-import { Rect } from '../types/Rect'
-import { registerBuiltins } from '../types/builtins'
-import { Text } from '../types/Text'
-import type { EditEnv } from './EditEnv'
-import type { EditPayload } from './EditPayload'
-import { AddtoCommand } from './AddtoCommand'
-import { BackCommand } from './BackCommand'
-import { CreateCommand } from './CreateCommand'
-import { DeleteCommand } from './DeleteCommand'
-import { FrontCommand } from './FrontCommand'
-import { GroupCommand } from './GroupCommand'
-import { MoveCommand } from './MoveCommand'
-import { ScaleCommand } from './ScaleCommand'
-import { SetCommand } from './SetCommand'
-import type { UndoableCommand } from './UndoableCommand'
-import { UngroupCommand } from './UngroupCommand'
+import { Circle } from '../../src/types/shapes/Circle'
+import { Canvas } from '../../src/types/Canvas'
+import { Group } from '../../src/types/shapes/Group'
+import { Rect } from '../../src/types/shapes/Rect'
+import { registerBuiltins } from '../../src/types/builtins'
+import { Text } from '../../src/types/shapes/Text'
+import type { EditEnv } from '../../src/command/base/EditEnv'
+import type { EditPayload } from '../../src/command/base/EditPayload'
+import { AddtoCommand } from '../../src/command/edit/AddtoCommand'
+import { BackCommand } from '../../src/command/edit/BackCommand'
+import { CreateCommand } from '../../src/command/edit/CreateCommand'
+import { DeleteCommand } from '../../src/command/edit/DeleteCommand'
+import { FrontCommand } from '../../src/command/edit/FrontCommand'
+import { GroupCommand } from '../../src/command/edit/GroupCommand'
+import { MoveCommand } from '../../src/command/edit/MoveCommand'
+import { ScaleCommand } from '../../src/command/edit/ScaleCommand'
+import { SetCommand } from '../../src/command/edit/SetCommand'
+import type { UndoableCommand } from '../../src/command/base/UndoableCommand'
+import { UngroupCommand } from '../../src/command/edit/UngroupCommand'
 
 const commands = {
   create: new CreateCommand(),
@@ -37,9 +37,10 @@ const env = (c: Canvas): EditEnv => ({ canvas: c })
 beforeAll(() => registerBuiltins())
 
 function okRun(c: Canvas, name: keyof typeof commands, args: string[]): EditPayload {
-  const r = (commands[name] as UndoableCommand).execute(args, env(c))
+  const r = (commands[name] as UndoableCommand).run(args, env(c))
   if (!r.ok) throw new Error(`意外失败: ${r.error.format()}`)
-  return r.value
+  // run 入口统一返回 Result<Payload>，编辑命令的载荷必为 EditPayload
+  return r.value as EditPayload
 }
 
 function run(c: Canvas, name: keyof typeof commands, args: string[]): string {
@@ -47,7 +48,7 @@ function run(c: Canvas, name: keyof typeof commands, args: string[]): string {
 }
 
 function fail(c: Canvas, name: keyof typeof commands, args: string[]): string {
-  const r = (commands[name] as UndoableCommand).execute(args, env(c))
+  const r = (commands[name] as UndoableCommand).run(args, env(c))
   if (r.ok) throw new Error(`意外成功: ${r.value.forward}`)
   return r.error.format()
 }
