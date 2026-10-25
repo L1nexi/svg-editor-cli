@@ -7,8 +7,7 @@ import { Command } from '../base/Command'
 // 属性行取 shape.details()（几何一行 + 画笔各行；text 多 text 行；g 为 children 行），两空格缩进
 export class ShowCommand extends Command {
   readonly name = 'show'
-  protected override readonly minArgs = 1
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [1]
   protected override readonly usage = '<id>'
 
   protected override execute(args: string[], env: EditEnv): Result<Payload> {

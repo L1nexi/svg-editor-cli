@@ -6,8 +6,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // front <id>：同级最前
 export class FrontCommand extends UndoableCommand {
   readonly name = 'front'
-  protected override readonly minArgs = 1
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [1]
   protected override readonly usage = '<id>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

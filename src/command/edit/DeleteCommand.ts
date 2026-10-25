@@ -6,8 +6,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // delete <id>：容器连同全部子孙；undo 恢复到原父容器原位置
 export class DeleteCommand extends UndoableCommand {
   readonly name = 'delete'
-  protected override readonly minArgs = 1
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [1]
   protected override readonly usage = '<id>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

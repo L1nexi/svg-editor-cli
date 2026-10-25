@@ -9,8 +9,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // 回显双形：叶子报移动后 anchor 绝对值，容器报增量；backward 镜像
 export class MoveCommand extends UndoableCommand {
   readonly name = 'move'
-  protected override readonly minArgs = 3
-  protected override readonly maxArgs = 3
+  protected override readonly argCounts = [3]
   protected override readonly usage = '<id> <dx> <dy>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

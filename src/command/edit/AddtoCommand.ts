@@ -7,8 +7,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // 环 = 把容器移入其自身子孙（或自身），复用 group 的环文案；报的是被移动容器的 id
 export class AddtoCommand extends UndoableCommand {
   readonly name = 'addto'
-  protected override readonly minArgs = 2
-  protected override readonly maxArgs = 2
+  protected override readonly argCounts = [2]
   protected override readonly usage = '<gid> <id>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

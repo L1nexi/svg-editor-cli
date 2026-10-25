@@ -7,8 +7,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // scale <id> <factor>：factor 同乘全部几何属性，容器递归
 export class ScaleCommand extends UndoableCommand {
   readonly name = 'scale'
-  protected override readonly minArgs = 2
-  protected override readonly maxArgs = 2
+  protected override readonly argCounts = [2]
   protected override readonly usage = '<id> <factor>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

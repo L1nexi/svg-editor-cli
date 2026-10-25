@@ -17,8 +17,7 @@ type Row = { prefix: string; shape: Shape }
 // 行素材 = shape.summary()（fill-only 内联在基类）；g 的 summary 可为空或前导空格，装配侧规整
 export class TreeCommand extends Command {
   readonly name = 'tree'
-  protected override readonly minArgs = 0
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [0, 1]
   protected override readonly usage = '[id]'
 
   protected override execute(args: string[], env: EditEnv): Result<Payload> {

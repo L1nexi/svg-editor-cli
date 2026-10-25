@@ -10,8 +10,7 @@ import { DocumentCommand } from '../base/DocumentCommand'
 export class ReadCommand extends DocumentCommand {
   readonly name = 'read'
   override readonly needsDocument = false
-  protected override readonly minArgs = 1
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [1]
   protected override readonly usage = '<file.svg>'
 
   protected override execute(args: string[], env: DocumentEnv): Result<ReadPayload> {

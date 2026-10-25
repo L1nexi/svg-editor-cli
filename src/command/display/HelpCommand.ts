@@ -29,8 +29,7 @@ const HELP_TEXT = [
 
 export class HelpCommand extends Command {
   readonly name = 'help'
-  protected override readonly minArgs = 0
-  protected override readonly maxArgs = 0
+  protected override readonly argCounts = [0]
   protected override readonly usage = 'no parameters'
 
   protected override execute(): Result<Payload> {

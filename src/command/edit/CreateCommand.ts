@@ -4,13 +4,14 @@ import { ShapeFactory } from '../../types/base/ShapeFactory'
 import type { EditEnv } from '../base/EditEnv'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
+import { MANY } from '../base/Command'
 
 // create <type> <id> [params…] [in <containerId>]
 // 校验序（Q4）：provider 参数 → 新 id 冲突 → 容器存在 → 容器是 g；
 // 工厂按名分派 = 白名单第二处（ADR-0002 决策三），未注册类型即 unknown shape type（box 为作业 §4.4 插件插槽）
 export class CreateCommand extends UndoableCommand {
   readonly name = 'create'
-  protected override readonly minArgs = 2
+  protected override readonly argCounts = [2, MANY]
   protected override readonly usage = '<type> <id> [params…] [in <containerId>]'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

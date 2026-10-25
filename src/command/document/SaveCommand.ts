@@ -8,8 +8,7 @@ import { DocumentCommand } from '../base/DocumentCommand'
 // 成功 ⇒ engine 时间线重建为仅链首（save 是检查点，Q13）
 export class SaveCommand extends DocumentCommand {
   readonly name = 'save'
-  protected override readonly minArgs = 0
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [0, 1]
   protected override readonly usage = '[file.svg]'
 
   protected override execute(args: string[], env: DocumentEnv): Result<Payload> {

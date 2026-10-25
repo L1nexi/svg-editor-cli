@@ -7,8 +7,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // 成功值为旧显示值——backward 同形换旧值；text 属性值带引号，其余不带
 export class SetCommand extends UndoableCommand {
   readonly name = 'set'
-  protected override readonly minArgs = 3
-  protected override readonly maxArgs = 3
+  protected override readonly argCounts = [3]
   protected override readonly usage = '<id> <attr> <value>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {

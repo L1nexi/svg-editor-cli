@@ -9,8 +9,7 @@ import { UndoableCommand } from '../base/UndoableCommand'
 // 缺失目标报 no such shape 而非 no such container（spec 基线，不用 requireContainer）
 export class UngroupCommand extends UndoableCommand {
   readonly name = 'ungroup'
-  protected override readonly minArgs = 1
-  protected override readonly maxArgs = 1
+  protected override readonly argCounts = [1]
   protected override readonly usage = '<gid>'
 
   protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
