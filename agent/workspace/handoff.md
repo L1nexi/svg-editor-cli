@@ -11,7 +11,7 @@
   - 三窄 env（EditEnv / DocumentEnv / TimelineEnv），engine 实现；command 不 import io。
   - 成功回显 = forward/backward 双文案，随 undo 单元入时间线；文案生成权在命令类。
   - 时间线 = 状态链 + 当前位置；文档类命令成功 ⇒ 重建为仅链首（无锁无标志）；undo/redo 三行判定；Q13 裁决（io 前旧历史不可恢复）。
-- **`doc/spec/commands.md` v1 已立**：19 条命令逐条 语法/语义/回显/失败/undo 粒度，锚定（⚓）与提案（P）两档；错误文案总表为 C5 审计点；tree 对齐公式与 §6.1 样例的 3 列偏差已记录。
+- **`doc/spec/commands.md` v1 已立**：19 条命令逐条 语法/语义/回显/失败/undo 粒度，锚定（附行号）与提案（P）两档；错误文案总表为 C5 审计点；tree 对齐公式与 §6.1 样例的 3 列偏差已记录。
 - 本设计轮文档（ADR-0004、commands.md、assignment-analysis 修订、history round2、handoff）**尚未提交**。
 
 ## 下一步
@@ -20,7 +20,7 @@
 2. **engine 模块**：状态链时间线 + 按类路由 + env 实现（loadDocument/saveDocument 委托 io）+ 草稿事务协议。
 3. **cli 模块**：REPL、分词（空格/双引号/`\"`/行首 #）、横幅与提示符。
 4. **io 模块**：@xmldom/xmldom 解析、缺 id 补号与警告、Q5 重复 id 改名、transform 展开（translate/scale）。
-5. 每模块落地后跑 transcript 锚定用例（commands.md ⚓ 行即断言来源）。
+5. 每模块落地后跑 transcript 锚定用例（commands.md 锚定行即断言来源）。
 
 ## 未决问题
 
