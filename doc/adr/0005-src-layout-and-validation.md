@@ -51,6 +51,7 @@ src/
 
 - 分派白名单仍为命令注册表 + 图形工厂两处，无新增分派点；
 - **2026-10-26 修订（smell 清扫轮）**：决策三.1 的参数个数声明由 min/max 上下限撤换为**允许个数表** `argCounts: readonly number[]`（尾位 `MANY` = 上不封顶，create `[2, MANY]`）——个数表直接枚举语法形态（canvas `[0, 2]`），「0 或 2」句型的单参空洞由表自然拒绝，命令内单参补检随之删除；`argCounts` 为 abstract 无默认，漏声明是编译错而非静默放行（原 `maxArgs = null` 默认是脚枪）。行为与文案零变化。
+- **2026-10-27 修订（iota 重设计）**：个数表的「上不封顶」由尾位哨兵 `MANY` 改为**数据承载标记** `iota(k)`（值 = `{ from: k }`，表示 k, k+1, k+2, …）——create `[iota(2)]`、group `[iota(3)]`，元素类型 `ArgCount = number | { from }`。哨兵靠位置约定（尾位 MANY = n ≥ 首项）表达无上限，混合表形被迫退化为「≥ 首项」读法，判定还需 `counts[0]!` 断言；iota 把「及以上」作为值携带，表 = 元素集合之并、空洞合法（如 `[1, iota(3)]` = 1 或 ≥3），位置规则与断言随之删除，声明处读出来就是语法。行为与文案零变化，单测零改动。
 - **同轮阈值重估**：重复收拢标准由「≥3 处」放宽为「≥3 处，或 ≥2 处且 spec 绑定语义、有漂移风险」。据此 init/canvas 的尺寸参数解析沉为 `DocumentCommand.parseDimensions`（spec §4.1：canvas 校验同 init）；测试执行助手收拢至 `tests/helpers.ts`。front/back 合并继续搁置（参数化类破坏一类一文件，共享基类属 ADR-0004 明文拒绝的分类学节点）。
 - **评估后不收（Rust `?` 手感）**：TS 无无代价的等价物——异常载体（run 边界捕获转 Err）违反 ADR-0002 决策一「错误是值不是异常」并使失败路径从命令体隐身；`Result.map/flatMap` 管道与作业 §2.1 的 OO 范式考察点相反。维持显式 `if (!r.ok) return r` 值流。
 - 2026-10-26 文档类命令批次：entity/ 增补 `NoSavePathError`（save 无参且文档来自 init，spec §6 P 行）——保存目标缺失按裁决线归寻址失败桶，其余两个目录不变；

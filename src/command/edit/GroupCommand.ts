@@ -4,13 +4,13 @@ import type { Shape } from '../../types/base/Shape'
 import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
-import { MANY } from '../base/Command'
+import { iota } from '../base/Command'
 
 // group <newGid> <id1> <id2>…：新建容器（挂画布根，spec v1.2）并收编，从各自原父容器摘出。
 // 收编顺序 = 原树前序遍历遭遇序（参数序 ≠ 树序时按树序）；环 = 目标同时含某容器与其子孙
 export class GroupCommand extends UndoableCommand {
   readonly name = 'group'
-  protected override readonly argCounts = [3, MANY]
+  protected override readonly argCounts = [iota(3)]
   protected override readonly usage = '<newGid> <id1> <id2>…'
 
   protected override execute(args: string[], env: EditHandler): Result<EditPayload> {

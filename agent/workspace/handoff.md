@@ -9,6 +9,7 @@
 - **编排分层（ADR-0006，待提交）**：两层编排——Engine 核心解释器（可连续投喂，不知 REPL）/ 应用层（cli，未来批次）串 UI 跑循环。engine 内部四对象：`Engine`（「字符串到 Command」的符号表 + 编排；具体命令类 import 清零，命令集由组装根注入 `tests/helpers.standardCommands()`）→ `Actuator`（「Command」的知识：守卫/四分支路由/三 Handler 装配/编辑类 copy→变异→赋值流程；io 在此使用）→ `State`（纯内部状态管理：Timeline + filepath 原语集，不触 io）→ `Timeline`（纯链组织 + undo/redo）。三个 *Env 更名 *Handler。
 - 112 单测全绿 + typecheck 干净；行为与文案零变化。设计讨论留痕 `agent/history/2026-10-26-orchestration-layers.md`（含 agent 首版把 Handler 装配写进 State 的偏差与纠正）。
 - 已提交：`d5a4a38` errors+io 缝、`b3fa80e` undo/redo 外壳+文档来源；更早四连提交 `f7880cb`…`c3bc83b`。
+- **argCounts 无上限标记改 iota（2026-10-27，旁路会话设计补记 `agent/history/2026-10-27-iota-redesign.md`）**：`iota(k)` 数据承载「k 及以上」（`{ from: k }`），表 = 元素集合之并、空洞合法；create `[iota(2)]`、group `[iota(3)]`，`MANY` 哨兵删除；112 全绿，测试零改动（ADR-0005 2026-10-27 修订）。
 
 ## 下一步：cli 批次 = 应用层（第二编排层，声明改动面先行）
 
@@ -21,5 +22,4 @@
 
 - tree §6.1 对齐差 3 列：按公式执行，README 一致性自查留痕，可向课程组求证。
 - spec §5 各类型 create usage 串（rect `x y w h [fill]`）与代码统一串并存——spec 先行的对齐待用户裁决。
-- iota 重设计（MANY → iota(k)，等价已验证、零测试变化）：旁路会话挂起项，用户点头即做。
 - 工程级：Node engines 声明 / 锁文件策略，提交前定。
