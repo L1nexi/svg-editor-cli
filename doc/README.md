@@ -21,7 +21,9 @@
 
 ## 质量保证手段
 
-（TODO——计划：§6 transcript 端到端验收 + §4.2 错误文案表单测，L129）
+当前 `npm test` 的 12 个文件、167 项测试通过，`npm run typecheck` 通过。错误类按规格作逐字文案断言；真实临时文件测试覆盖六类型读写、补号与重名、坐标展开、文件/XML 失败及失败后历史保持。
+
+两份会话验收测试启动真实 `src/main.ts` 进程，逐字比对作业 §6 和 §6.1 的输出，检查保存文件；流程图 tree 的手排差异按命令规格中的列宽公式处理。最终交付前仍需整理需求覆盖矩阵、完成下列一致性自查及工程待处理项。
 
 ## 修订记录
 
@@ -33,3 +35,4 @@
 - 2026-10-27 cli 批次（应用层，ADR-0006 修订节）：组合根 `src/main.ts`（src 顶层，不属于任何模块）+ 产品命令集 `src/commands.ts`（tests/helpers 改复用）；`src/cli/`（Repl 循环 + present 装配 = 类型分派第二处、Parser 词法与细则 P）；`src/io/FileIoBackend`（save 真落盘 + load 过渡桩，io 批次替换）；errors 增 `io/CannotWriteFileError`（锚定）与 `IoNotImplementedError`（过渡）。冒烟暴露 registerBuiltins 产品装配链缺失（仅测试调用），归组合根修复。125 单测绿。
 - 2026-10-27 SVG 读取第一步（ADR-0007）：`types/base/CoordinateTransform` 与 `ShapeProvider.fromAttrs` 的可选变换参数；类型自身解释坐标与尺寸，非等比圆读为椭圆，补齐 text 读取画笔属性。图形测试 29 项与 typecheck 通过；XML 导入待下一步。
 - 2026-10-27 SVG 真实读取（ADR-0007）：`io/SvgReader`、`SvgIds`、`SvgTransform` 接入 FileIoBackend，新增 @xmldom/xmldom 0.9.12。保留显式 id 后补号/重名；展开嵌套变换和 viewBox，未知元素跳过并警告；新增 CannotReadFileError，删除读取过渡桩及规格行。33 项真实文件测试与 typecheck 通过，双轴复审的问题已修正。
+- 2026-10-27 会话验收：新增 `tests/cli/transcript.test.ts`，通过 Node 的 `--import tsx` 启动真实组合根，逐字核验作业完整会话和两节点流程图。全量 167 项测试、typecheck、diff 检查通过。
