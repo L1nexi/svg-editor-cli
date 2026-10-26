@@ -1,6 +1,6 @@
 import { Ok, type Result } from '../../errors'
 import { formatNumber } from '../../types/num'
-import type { DocumentEnv } from '../base/DocumentEnv'
+import type { DocumentHandler } from '../base/DocumentHandler'
 import { Payload } from '../base/Payload'
 import { DocumentCommand } from '../base/DocumentCommand'
 
@@ -11,7 +11,7 @@ export class CanvasCommand extends DocumentCommand {
   protected override readonly argCounts = [0, 2]
   protected override readonly usage = '[w] [h]'
 
-  protected override execute(args: string[], env: DocumentEnv): Result<Payload> {
+  protected override execute(args: string[], env: DocumentHandler): Result<Payload> {
     const size = this.parseDimensions(args)
     if (!size.ok) return size
     if (size.value === null) {

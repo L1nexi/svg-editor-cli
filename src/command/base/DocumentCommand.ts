@@ -1,13 +1,13 @@
 import { BadNumberError, BadValueError, Err, Ok, type Result } from "../../errors";
 import { parseNumber } from "../../types/num";
-import type { DocumentEnv } from "./DocumentEnv";
+import type { DocumentHandler } from "./DocumentHandler";
 import type { Payload } from "./Payload";
 import { Command } from "./Command";
 
 // 文档类 4 条（init / read / save / canvas）：天然不产生 undo 单元——成功即时间线重建为仅链首（Q13）。
 // read 收窄返回为 Result<ReadPayload>（协变合法）
 export abstract class DocumentCommand extends Command {
-  protected abstract override execute(args: string[], env: DocumentEnv): Result<Payload>;
+  protected abstract override execute(args: string[], env: DocumentHandler): Result<Payload>;
 
   // init / canvas 共用的尺寸参数（spec §4.1：canvas 校验同 init，沉底防漂移）。
   // 前置：run 已按 argCounts [0, 2] 放行，长度只能是 0 或 2；无参返回 null（默认尺寸来源归调用方）

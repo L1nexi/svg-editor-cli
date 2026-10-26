@@ -1,5 +1,5 @@
 import { CannotGroupIntoDescendantError, Err, Ok, type Result } from '../../errors'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 
@@ -10,7 +10,7 @@ export class AddtoCommand extends UndoableCommand {
   protected override readonly argCounts = [2]
   protected override readonly usage = '<gid> <id>'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const gid = args[0]!
     const id = args[1]!
     const found = env.canvas.requireShape(id)

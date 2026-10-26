@@ -5,7 +5,7 @@ import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
 import { registerBuiltins } from '../../src/types/builtins'
 import { Text } from '../../src/types/shapes/Text'
-import type { EditEnv } from '../../src/command/base/EditEnv'
+import type { EditHandler } from '../../src/command/base/EditHandler'
 import type { EditPayload } from '../../src/command/base/EditPayload'
 import { AddtoCommand } from '../../src/command/edit/AddtoCommand'
 import { BackCommand } from '../../src/command/edit/BackCommand'
@@ -32,7 +32,7 @@ const commands = {
   back: new BackCommand(),
 }
 
-const env = (c: Canvas): EditEnv => ({ canvas: c })
+const env = (c: Canvas): EditHandler => ({ canvas: c })
 
 beforeAll(() => registerBuiltins())
 

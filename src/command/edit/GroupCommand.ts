@@ -1,7 +1,7 @@
 import { CannotGroupIntoDescendantError, Err, IdExistsError, Ok, type Result } from '../../errors'
 import { Group } from '../../types/shapes/Group'
 import type { Shape } from '../../types/base/Shape'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 import { MANY } from '../base/Command'
@@ -13,7 +13,7 @@ export class GroupCommand extends UndoableCommand {
   protected override readonly argCounts = [3, MANY]
   protected override readonly usage = '<newGid> <id1> <id2>…'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const newGid = args[0]!
     if (env.canvas.findById(newGid) !== null) {
       return Err(new IdExistsError(newGid))

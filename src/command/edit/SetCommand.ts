@@ -1,5 +1,5 @@
 import { Ok, type Result } from '../../errors'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 
@@ -10,7 +10,7 @@ export class SetCommand extends UndoableCommand {
   protected override readonly argCounts = [3]
   protected override readonly usage = '<id> <attr> <value>'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const found = env.canvas.requireShape(args[0]!)
     if (!found.ok) return found
     const shape = found.value

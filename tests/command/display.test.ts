@@ -4,7 +4,7 @@ import { Circle } from '../../src/types/shapes/Circle'
 import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
 import { Text } from '../../src/types/shapes/Text'
-import type { EditEnv } from '../../src/command/base/EditEnv'
+import type { EditHandler } from '../../src/command/base/EditHandler'
 import { HelpCommand } from '../../src/command/display/HelpCommand'
 import { ShowCommand } from '../../src/command/display/ShowCommand'
 import { TreeCommand } from '../../src/command/display/TreeCommand'
@@ -14,7 +14,7 @@ const tree = new TreeCommand()
 const show = new ShowCommand()
 const help = new HelpCommand()
 
-const env = (c: Canvas): EditEnv => ({ canvas: c })
+const env = (c: Canvas): EditHandler => ({ canvas: c })
 
 // 作业 §5.1 transcript 的树状态：bg / title / markers[c1, box]，fill 各就各位
 function sampleCanvas(): Canvas {

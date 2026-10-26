@@ -1,5 +1,5 @@
 import { Ok, type Result } from '../../errors'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { Payload } from '../base/Payload'
 import { Command } from '../base/Command'
 

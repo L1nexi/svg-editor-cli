@@ -1,5 +1,5 @@
 import { Ok, type Result } from '../../errors'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { Payload } from '../base/Payload'
 import { Command } from '../base/Command'
 
@@ -10,7 +10,7 @@ export class ShowCommand extends Command {
   protected override readonly argCounts = [1]
   protected override readonly usage = '<id>'
 
-  protected override execute(args: string[], env: EditEnv): Result<Payload> {
+  protected override execute(args: string[], env: EditHandler): Result<Payload> {
     const found = env.canvas.requireShape(args[0]!)
     if (!found.ok) return found
     const shape = found.value

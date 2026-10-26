@@ -3,7 +3,7 @@ import type { Canvas } from '../../types/Canvas'
 import { Group } from '../../types/shapes/Group'
 import type { Shape } from '../../types/base/Shape'
 import { formatNumber } from '../../types/num'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { Payload } from '../base/Payload'
 import { Command } from '../base/Command'
 
@@ -20,7 +20,7 @@ export class TreeCommand extends Command {
   protected override readonly argCounts = [0, 1]
   protected override readonly usage = '[id]'
 
-  protected override execute(args: string[], env: EditEnv): Result<Payload> {
+  protected override execute(args: string[], env: EditHandler): Result<Payload> {
     if (args.length === 1) {
       const found = env.canvas.requireShape(args[0]!)
       if (!found.ok) return found

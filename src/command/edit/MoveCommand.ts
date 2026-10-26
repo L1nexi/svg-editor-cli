@@ -1,7 +1,7 @@
 import { BadNumberError, Err, Ok, type Result } from '../../errors'
 import { formatNumber, parseNumber } from '../../types/num'
 import { Group } from '../../types/shapes/Group'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 
@@ -12,7 +12,7 @@ export class MoveCommand extends UndoableCommand {
   protected override readonly argCounts = [3]
   protected override readonly usage = '<id> <dx> <dy>'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const dx = parseNumber(args[1]!)
     if (dx === null) return Err(new BadNumberError('dx', args[1]!))
     const dy = parseNumber(args[2]!)

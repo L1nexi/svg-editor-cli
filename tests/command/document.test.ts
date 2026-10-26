@@ -3,13 +3,14 @@ import { Canvas } from '../../src/types/Canvas'
 import { Circle } from '../../src/types/shapes/Circle'
 import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
-import type { DocumentEnv } from '../../src/command/base/DocumentEnv'
+import type { DocumentHandler } from '../../src/command/base/DocumentHandler'
 import { ReadPayload } from '../../src/command/base/ReadPayload'
 import { CanvasCommand } from '../../src/command/document/CanvasCommand'
 import { InitCommand } from '../../src/command/document/InitCommand'
 import { ReadCommand } from '../../src/command/document/ReadCommand'
 import { SaveCommand } from '../../src/command/document/SaveCommand'
-import { DomainError, Err, Ok } from '../../src/errors'
+import { Err, Ok } from '../../src/errors'
+import { StubError } from '../helpers'
 import { failEcho, okRun } from '../helpers'
 
 const init = new InitCommand()
@@ -18,13 +19,13 @@ const save = new SaveCommand()
 const canvasCmd = new CanvasCommand()
 
 // 文档类 env 假实现：记录采纳与落盘调用；loadDocument 按需注入返回值
-function docEnv(c: Canvas, readPath: string | null = null): DocumentEnv & {
+function docEnv(c: Canvas, filepath: string | null = null): DocumentHandler & {
   replaced: Canvas[]
   saved: { path: string; svg: string }[]
 } {
   const env = {
     canvas: c,
-    readPath,
+    filepath,
     replaced: [] as Canvas[],
     saved: [] as { path: string; svg: string }[],
     replaceDocument(nc: Canvas): void {
@@ -33,7 +34,7 @@ function docEnv(c: Canvas, readPath: string | null = null): DocumentEnv & {
     resizeCanvas(w: number, h: number): void {
       c.resize(w, h)
     },
-    loadDocument(): ReturnType<DocumentEnv['loadDocument']> {
+    loadDocument(): ReturnType<DocumentHandler['loadDocument']> {
       throw new Error('测试未注入 loadDocument 行为')
     },
     saveDocument(path: string, svg: string) {
@@ -103,13 +104,8 @@ describe('read', () => {
   })
 
   it('loadDocument 失败原样透传（cannot read file 产地是 io）', () => {
-    class StubError extends DomainError {
-      format(): string {
-        return 'error: cannot read file: a.svg'
-      }
-    }
     const env = docEnv(new Canvas())
-    env.loadDocument = () => Err(new StubError())
+    env.loadDocument = () => Err(new StubError('error: cannot read file: a.svg'))
     expect(failEcho(env, read, ['a.svg'])).toBe('error: cannot read file: a.svg')
     expect(env.replaced).toHaveLength(0)
   })
@@ -120,7 +116,7 @@ describe('read', () => {
 })
 
 describe('save', () => {
-  it('无参落到 readPath；forward 计数；svg 交给 saveDocument', () => {
+  it('无参落到 filepath；forward 计数；svg 交给 saveDocument', () => {
     const c = sevenElementCanvas()
     const env = docEnv(c, 'demo.svg')
     expect(okRun(env, save, []).forward).toBe('saved to demo.svg (7 elements)')

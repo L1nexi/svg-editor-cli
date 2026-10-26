@@ -1,7 +1,7 @@
 import { Err, IdExistsError, InvalidArgumentsError, Ok, type Result, UnknownShapeTypeError } from '../../errors'
 import { Group } from '../../types/shapes/Group'
 import { ShapeFactory } from '../../types/base/ShapeFactory'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 import { MANY } from '../base/Command'
@@ -14,7 +14,7 @@ export class CreateCommand extends UndoableCommand {
   protected override readonly argCounts = [2, MANY]
   protected override readonly usage = '<type> <id> [params…] [in <containerId>]'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const type = args[0]!
     const id = args[1]!
     const provider = ShapeFactory.provider(type)

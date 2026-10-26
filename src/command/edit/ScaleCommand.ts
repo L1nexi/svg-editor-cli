@@ -1,6 +1,6 @@
 import { BadNumberError, Err, Ok, type Result, ScaleFactorError } from '../../errors'
 import { formatNumber, parseNumber } from '../../types/num'
-import type { EditEnv } from '../base/EditEnv'
+import type { EditHandler } from '../base/EditHandler'
 import { EditPayload } from '../base/EditPayload'
 import { UndoableCommand } from '../base/UndoableCommand'
 
@@ -10,7 +10,7 @@ export class ScaleCommand extends UndoableCommand {
   protected override readonly argCounts = [2]
   protected override readonly usage = '<id> <factor>'
 
-  protected override execute(args: string[], env: EditEnv): Result<EditPayload> {
+  protected override execute(args: string[], env: EditHandler): Result<EditPayload> {
     const factor = parseNumber(args[1]!)
     if (factor === null) return Err(new BadNumberError('factor', args[1]!))
     if (factor <= 0) return Err(new ScaleFactorError())

@@ -1,8 +1,8 @@
 import { Err, InvalidArgumentsError, type Result } from "../../errors";
-import type { DocumentEnv } from "./DocumentEnv";
-import type { EditEnv } from "./EditEnv";
+import type { DocumentHandler } from "./DocumentHandler";
+import type { EditHandler } from "./EditHandler";
 import type { Payload } from "./Payload";
-import type { TimelineEnv } from "./TimelineEnv";
+import type { TimelineHandler } from "./TimelineHandler";
 
 // 无上限个数标记：argCounts 尾位 MANY = 「以及更大的任意个数」（create / group 的可变参数）
 export const MANY = Number.POSITIVE_INFINITY;
@@ -20,7 +20,7 @@ export abstract class Command {
   protected abstract readonly usage: string;
 
   // engine 的统一入口，四个命令域共用
-  run(args: string[], env: EditEnv | DocumentEnv | TimelineEnv): Result<Payload> {
+  run(args: string[], env: EditHandler | DocumentHandler | TimelineHandler): Result<Payload> {
     if (!Command.countAllowed(this.argCounts, args.length)) {
       return Err(new InvalidArgumentsError(this.usage));
     }
@@ -35,6 +35,6 @@ export abstract class Command {
   // env 参数为三域联合：各抽象子类收窄到本域能力（作者期围栏，ADR-0004 决策二）
   protected abstract execute(
     args: string[],
-    env: EditEnv | DocumentEnv | TimelineEnv,
+    env: EditHandler | DocumentHandler | TimelineHandler,
   ): Result<Payload>;
 }

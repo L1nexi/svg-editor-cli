@@ -1,5 +1,5 @@
 import { Ok, type Result } from '../../errors'
-import type { DocumentEnv } from '../base/DocumentEnv'
+import type { DocumentHandler } from '../base/DocumentHandler'
 import { Payload } from '../base/Payload'
 import { ReadPayload } from '../base/ReadPayload'
 import { DocumentCommand } from '../base/DocumentCommand'
@@ -13,7 +13,7 @@ export class ReadCommand extends DocumentCommand {
   protected override readonly argCounts = [1]
   protected override readonly usage = '<file.svg>'
 
-  protected override execute(args: string[], env: DocumentEnv): Result<ReadPayload> {
+  protected override execute(args: string[], env: DocumentHandler): Result<ReadPayload> {
     const path = args[0]!
     const loaded = env.loadDocument(path)
     if (!loaded.ok) return loaded
