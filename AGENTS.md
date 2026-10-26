@@ -12,7 +12,7 @@
 | `doc/adr/`         | 架构决策记录（ADR）                                    | 结构性决策必须先立 ADR 再动代码                  |
 | `agent/history/`   | 与 AI 协作的完整过程记录                               | 关键讨论、AI 产出问题与纠正，只追加不改写        |
 | `agent/workspace/` | Agent 持久记忆交接                                     | 会话结束前更新 `workspace/handoff.md`            |
-| `src/`             | 源码（types / command 已落地；engine / io / cli 待建） | 写法约束见下节                                   |
+| `src/`             | 源码（types / errors / command / engine / io / cli 已落地；组合根 `main.ts`） | 写法约束见下节                                   |
 | `tests/`           | 单元测试（镜像 src 模块结构）                          | `npm test`（Vitest）；typecheck 一并覆盖         |
 
 ## 硬性规则（源自作业）

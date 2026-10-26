@@ -19,3 +19,5 @@ export { NotAContainerError } from "./hierarchy/NotAContainerError";
 export { CannotUngroupCompositeError } from "./hierarchy/CannotUngroupCompositeError";
 export { CannotGroupIntoDescendantError } from "./hierarchy/CannotGroupIntoDescendantError";
 export { CannotUngroupTopLevelError } from "./hierarchy/CannotUngroupTopLevelError";
+export { CannotWriteFileError } from "./io/CannotWriteFileError";
+export { IoNotImplementedError } from "./io/IoNotImplementedError";

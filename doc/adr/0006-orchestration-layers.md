@@ -37,3 +37,7 @@ io 依赖链：Engine → Actuator；State 不触碰 io；State 持有 Timeline�
 
 - Engine 缩为注册表 + 转发，具体命令类 import 清零（19 条依赖边移除）；命令集装配由组装根注入（当下为 `tests/helpers.ts` 的 `standardCommands()`，cli 批次迁入应用层组装根）。
 - 白名单第一处（命令名 → 实现）仍在 engine 模块（`Engine.registry`），「待重构」标注维持。
+
+## 修订
+
+- 2026-10-27：应用层细化——组合根独立于 cli 模块，位于 `src/main.ts`（src 顶层，不属于任何模块，唯一同时认识各模块的装配点）；cli 收敛为 engine 的消费者（Repl 循环 + Parser 词法 + 输出组装），不含任何组装知识；产品命令集随之落 `src/commands.ts`（`tests/helpers.ts` 复用同一清单）。内置图形注册（`registerBuiltins`）归组合根——此前仅测试调用、产品装配链缺失，cli 批次冒烟暴露后修复。io 装配裁决：save 随本批次落地真实现（纯落盘），load 依赖 @xmldom 留 io 批次（过渡桩，spec §6 过渡 P 行同生同灭）。

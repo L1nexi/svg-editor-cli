@@ -12,9 +12,9 @@
 | 启动横幅     | `svg-editor 0.1 — type 'help' for commands`（L331）                                                                                     |
 | 错误行       | 前缀 `error: `，一行一条；命令失败不改变任何状态 （L146）                                                                               |
 | 警告行       | 前缀 `warning: `，不使命令失败 （L143）                                                                                                 |
-| 注释         | 行首 `#` 的行整行忽略 （L141，§6.1 脚本内有注释行）                                                                                     |
+| 注释         | 行首 `#` 的行整行忽略 （L141，§6.1 脚本内有注释行；含前导空白 P）                                                                       |
 | 空行         | 静默，重新提示 P                                                                                                                        |
-| 分词         | 空格切分；含空格参数用双引号包裹 （L145）；`\"` 为字面双引号（Q7，P）                                                                   |
+| 分词         | 空格切分；含空格参数用双引号包裹 （L145）；`\"` 为字面双引号（Q7，P）；引号可在参数任意位置开合、未闭合按行尾闭合（细则 P）             |
 | 无文档守卫   | 除 init / read 外，未 init/read 前任何命令报 `error: no document. use 'init' or 'read' first`（L246）                                   |
 | 多错误判定序 | cli 语法 → 命令参数（个数、数值）→ 引擎语义（id、容器、环），报第一条（Q4 裁决）                                                        |
 | 参数个数不符 | `error: invalid arguments: expected <usage>` **P**；usage 串 = 该命令语法去掉命令名后的部分（create 各类型见 §5，g 为 `no parameters`） |
@@ -213,6 +213,7 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 | `error: invalid value for <attr>: <value>`                             | P    | set 数值属性非数值；init/canvas 尺寸非正                                     |
 | `error: no save path: document came from init`                         | P    | save 无参且文档来自 init（Q3）                                               |
 | `error: unknown command: <name>`                                       | P    | 注册表未登记的命令名                                                         |
+| `error: io not implemented: read`                                      | P    | 过渡桩：load 的解析随 io 批次接入，此前 read 必失败（io 批次移除本行）       |
 
 警告侧：`warning: assigned id rect1 to unnamed <rect>` ；重复 id 改名、transform 降级两变体 **P**（§4.1 read）。
 
@@ -221,3 +222,4 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 - 2026-10-25 v1：随 ADR-0004 立表。锚定文案自作业 §2/§3/§4.2/§5/§6/§6.1 逐字录入；提案文案为命令层设计讨论的基线；Q13 裁决（时间线截断）与本表 §2 绑定。
 - 2026-10-25 v1.1：ungroup 目标为叶子复用 `not a container`（L239，同日裁决）；group / addto 环触发条件按原文表意精化；补 unknown command 与空行两条 P（作业未规定）。
 - 2026-10-25 v1.2：group 语义补「新容器挂画布根 P」与「去重后不足 2 仍执行 P」；撤回 ungroup forward 的 `moved to svg` 变体（根级容器被 L243 拒绝，无可达触发状态）；create 的 `in` 尾缀判定与退化 corner 留痕 P。
+- 2026-10-27 v1.3：分词细则三条 P（引号任意位置开合、未闭合按行尾闭合、前导空白 `#` 同为注释）；补 io 过渡桩 P 行（save 随 cli 批次落地真实现，load 留 io 批次，桩文案届时移除）。
