@@ -80,3 +80,12 @@ TimelineEnv  { undo(), redo() }                            undo/redo 命令专�
 - 白名单之外按类判定的共两处：engine 路由与 cli 的载荷展示判定（决策三），均已在本 ADR 明示；命令类别或载荷形状若增减，随之修订本 ADR。
 - 「文档类」是作业自己的类名（L162、L251）；报错文案里的 "io" 是作业措辞，逐字照抄，不解释。
 - tree 显示的对齐公式与 §6.1 手排样例存在 3 列偏差，裁决见 `doc/spec/commands.md` §显示格式。
+
+## 修订（2026-10-26，engine 批次）
+
+- **时间线重建绑定在变更型 env 方法的实现上**：决策四「文档类命令成功 ⇒ 重建为仅链首」的实现机制 = replaceDocument / resizeCanvas / saveDocument 三个变更型方法在 engine 实现内重建时间线——canvas 无参只读不经过它们，是文档类中唯一不重建者（spec §4.1）；失败不调用即不重建，失败无副作用对时间线同样成立。
+- **DocumentEnv.replaceDocument 增 filepath 参数**：`replaceDocument(c, filepath: string | null)`——文档来源随采纳落定（read 传路径、init 传 null；保存与改尺寸不改来源）。Q3「文档来自 init」的判定即 filepath 为 null，覆盖 read → init → save 的再初始化角落。决策二签名随之修订。
+- **UndoableCommand 覆写 run 收窄返回**：`run(args, env: EditEnv): Result<EditPayload>`——决策一「类型收窄后 backward 为必填字段，编译期强制」由此兑现；转换的成立性由 execute 的抽象契约保证。
+- **状态聚合与纯编排**：链、游标、文档来源同居 Timeline（hasDocument / adopt / checkpoint / resizeCanvas / recordEdit / undo / redo 是它的全部状态操作），Engine 不持任何可变状态、不出现重建与来源的机制——只剩注册、守卫、路由与 env 装配；画布指针由链首与游标推导，「链、游标、画布指针同动」由单一事实源成立。
+- ***Env 更名 *Handler，实现归属随 ADR-0006 调整**：三句柄（EditHandler / DocumentHandler / TimelineHandler）视图由 Actuator 从 State 原语装配，save 的 io→checkpoint 组合上提 Actuator 流程；本节与决策二所称「engine 实现」自 ADR-0006 起读作「engine 模块内（Actuator / State）」。
+- **状态归属的最终版（取代第 4 款的「同居 Timeline」表述）**：链与游标居 Timeline（截断、追加、undo/redo）；文档来源与存在性（filepath / hasDocument / adopt）居 State，Timeline 明确不知来源与存在性；无文档守卫、按类路由与句柄装配居 Actuator；Engine 只剩注册与转发。四对象职责以 ADR-0006 为准。

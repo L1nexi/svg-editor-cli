@@ -19,7 +19,7 @@ ADR-0002 的五模块划分不变，收拢发生在模块内部：
 ```text
 src/
   command/
-    base/        Command / UndoableCommand / DocumentCommand + 三域 env + 载荷 DTO
+    base/        Command / UndoableCommand / DocumentCommand + 三域 handler + 载荷 DTO
     edit/        编辑类 10 条
     timeline/    undo / redo（随 engine 批次建立，不预建空目录）
     display/     tree / show / help（随显示类批次建立）
@@ -54,6 +54,7 @@ src/
 - **同轮阈值重估**：重复收拢标准由「≥3 处」放宽为「≥3 处，或 ≥2 处且 spec 绑定语义、有漂移风险」。据此 init/canvas 的尺寸参数解析沉为 `DocumentCommand.parseDimensions`（spec §4.1：canvas 校验同 init）；测试执行助手收拢至 `tests/helpers.ts`。front/back 合并继续搁置（参数化类破坏一类一文件，共享基类属 ADR-0004 明文拒绝的分类学节点）。
 - **评估后不收（Rust `?` 手感）**：TS 无无代价的等价物——异常载体（run 边界捕获转 Err）违反 ADR-0002 决策一「错误是值不是异常」并使失败路径从命令体隐身；`Result.map/flatMap` 管道与作业 §2.1 的 OO 范式考察点相反。维持显式 `if (!r.ok) return r` 值流。
 - 2026-10-26 文档类命令批次：entity/ 增补 `NoSavePathError`（save 无参且文档来自 init，spec §6 P 行）——保存目标缺失按裁决线归寻址失败桶，其余两个目录不变；
+- 2026-10-26 engine 批次：entity/ 增补 `UnknownCommandError` / `NoDocumentError` / `UndoNotAllowedAfterIoError` / `NothingToRedoError`——注册表寻址落空、文档实体不存在、链首前无边可走（undo/redo 三行判定的两类失败），均按裁决线归存在性/寻址失败；
 - 全部 `error:` 与成功回显文案零变化（锚定单测逐字断言原样通过）；
 - 失败无副作用不变：校验发生在触碰画布状态之前，或走返回 Err 值的路径；
 - 一类一文件不变：本轮新增的是基类字段与方法，不是新类。
