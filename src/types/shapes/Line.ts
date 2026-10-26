@@ -1,6 +1,7 @@
 import { attrNumber, formatNumber } from '../num'
 import { type AttrSetter, escapeXml, numberAttr, Shape } from '../base/Shape'
 import { numericFromArgs, type ShapeProvider } from '../base/ShapeProvider'
+import { CoordinateTransform } from '../base/CoordinateTransform'
 
 export class Line extends Shape {
   x1: number
@@ -79,13 +80,13 @@ export const lineProvider: ShapeProvider = {
     numericFromArgs(id, args, 'x1 y1 x2 y2 [stroke]', ['x1', 'y1', 'x2', 'y2'], 'stroke', ns => {
       return new Line(id, ns[0], ns[1], ns[2], ns[3])
     }),
-  fromAttrs(id, attrs) {
+  fromAttrs(id, attrs, _text, transform = new CoordinateTransform()) {
     const shape = new Line(
       id,
-      attrNumber(attrs['x1']),
-      attrNumber(attrs['y1']),
-      attrNumber(attrs['x2']),
-      attrNumber(attrs['y2']),
+      transform.x(attrNumber(attrs['x1'])),
+      transform.y(attrNumber(attrs['y1'])),
+      transform.x(attrNumber(attrs['x2'])),
+      transform.y(attrNumber(attrs['y2'])),
     )
     shape.applyCommonAttrs(attrs)
     return shape

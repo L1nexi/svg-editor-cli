@@ -1,6 +1,7 @@
 import { BadNumberError, Err, InvalidArgumentsError, Ok, type Result } from '../../errors'
 import { parseNumber } from '../num'
 import type { Shape } from './Shape'
+import type { CoordinateTransform } from './CoordinateTransform'
 
 // 图形类型的注册契约（作业 §4.4 ShapeProvider 插槽的最小形状；本阶段仅内置类型实现，
 // 外部加载属插件化阶段目标）
@@ -9,7 +10,12 @@ export interface ShapeProvider {
   // create 路径：id 之后的位置参数；参数个数与数值的知识归各类
   fromArgs(id: string, args: string[]): Result<Shape>
   // read 路径：XML 属性 → 图形；textContent 仅 text 元素使用
-  fromAttrs(id: string, attrs: Record<string, string>, textContent?: string): Shape
+  fromAttrs(
+    id: string,
+    attrs: Record<string, string>,
+    textContent?: string,
+    transform?: CoordinateTransform,
+  ): Shape
 }
 
 // 位置参数 → 定长数值元组（调用方保证 args.length >= names.length）

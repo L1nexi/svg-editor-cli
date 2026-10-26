@@ -1,6 +1,7 @@
 import { attrNumber, formatNumber } from '../num'
 import { type AttrSetter, escapeXml, numberAttr, Shape } from '../base/Shape'
 import { numericFromArgs, type ShapeProvider } from '../base/ShapeProvider'
+import { CoordinateTransform } from '../base/CoordinateTransform'
 
 export class Ellipse extends Shape {
   cx: number
@@ -71,13 +72,13 @@ export const ellipseProvider: ShapeProvider = {
     numericFromArgs(id, args, 'cx cy rx ry [fill]', ['cx', 'cy', 'rx', 'ry'], 'fill', ns => {
       return new Ellipse(id, ns[0], ns[1], ns[2], ns[3])
     }),
-  fromAttrs(id, attrs) {
+  fromAttrs(id, attrs, _text, transform = new CoordinateTransform()) {
     const shape = new Ellipse(
       id,
-      attrNumber(attrs['cx']),
-      attrNumber(attrs['cy']),
-      attrNumber(attrs['rx']),
-      attrNumber(attrs['ry']),
+      transform.x(attrNumber(attrs['cx'])),
+      transform.y(attrNumber(attrs['cy'])),
+      transform.width(attrNumber(attrs['rx'])),
+      transform.height(attrNumber(attrs['ry'])),
     )
     shape.applyCommonAttrs(attrs)
     return shape

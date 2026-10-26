@@ -1,6 +1,8 @@
 import { attrNumber, formatNumber } from '../num'
 import { type AttrSetter, escapeXml, numberAttr, Shape } from '../base/Shape'
 import { numericFromArgs, type ShapeProvider } from '../base/ShapeProvider'
+import { CoordinateTransform } from '../base/CoordinateTransform'
+import { Ellipse } from './Ellipse'
 
 export class Circle extends Shape {
   cx: number
@@ -65,8 +67,13 @@ export const circleProvider: ShapeProvider = {
     numericFromArgs(id, args, 'cx cy r [fill]', ['cx', 'cy', 'r'], 'fill', ns => {
       return new Circle(id, ns[0], ns[1], ns[2])
     }),
-  fromAttrs(id, attrs) {
-    const shape = new Circle(id, attrNumber(attrs['cx']), attrNumber(attrs['cy']), attrNumber(attrs['r']))
+  fromAttrs(id, attrs, _text, transform = new CoordinateTransform()) {
+    const cx = transform.x(attrNumber(attrs['cx']))
+    const cy = transform.y(attrNumber(attrs['cy']))
+    const r = attrNumber(attrs['r'])
+    const rx = transform.width(r)
+    const ry = transform.height(r)
+    const shape = rx === ry ? new Circle(id, cx, cy, rx) : new Ellipse(id, cx, cy, rx, ry)
     shape.applyCommonAttrs(attrs)
     return shape
   },

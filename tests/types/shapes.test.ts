@@ -6,6 +6,7 @@ import { Group } from '../../src/types/shapes/Group'
 import { Rect } from '../../src/types/shapes/Rect'
 import { ShapeFactory } from '../../src/types/base/ShapeFactory'
 import { Text } from '../../src/types/shapes/Text'
+import { CoordinateTransform } from '../../src/types/base/CoordinateTransform'
 
 beforeAll(() => registerBuiltins())
 
@@ -218,6 +219,42 @@ describe('序列化转义', () => {
   it('text 内容 XML 转义', () => {
     expect(new Text('t', 0, 0, 'a<b&c').toSvg(0)).toBe(
       '<text id="t" x="0" y="0">a&lt;b&amp;c</text>',
+    )
+  })
+})
+
+describe('读取属性与坐标展开（ADR-0007）', () => {
+  it('父子变换合成后，位置和平移、尺寸和缩放分别生效', () => {
+    const transform = new CoordinateTransform(1, 1, 10, 20)
+      .append(new CoordinateTransform(2, 3))
+      .append(new CoordinateTransform(1, 1, 4, 5))
+    const rect = ShapeFactory.provider('rect')!.fromAttrs(
+      'r', { x: '1', y: '2', width: '3', height: '4' }, undefined, transform,
+    )
+    expect(rect.toSvg(0)).toBe('<rect id="r" x="20" y="41" width="6" height="12"/>')
+  })
+
+  it('非等比缩放的圆以相同 id 读为椭圆，并保留画笔属性', () => {
+    const circle = ShapeFactory.provider('circle')!.fromAttrs(
+      'c', { cx: '1', cy: '2', r: '3', fill: 'red' }, undefined, new CoordinateTransform(2, 3),
+    )
+    expect(circle.toSvg(0)).toBe('<ellipse id="c" cx="2" cy="6" rx="6" ry="9" fill="red"/>')
+  })
+
+  it('反射后的矩形仍用左上角和正尺寸表示', () => {
+    const rect = ShapeFactory.provider('rect')!.fromAttrs(
+      'r', { x: '1', y: '2', width: '3', height: '4' }, undefined, new CoordinateTransform(-2, -3),
+    )
+    expect(rect.toSvg(0)).toBe('<rect id="r" x="-8" y="-18" width="6" height="12"/>')
+  })
+
+  it('text 读取恢复位置、文本与全部已设置的画笔属性', () => {
+    const text = ShapeFactory.provider('text')!.fromAttrs(
+      't', { x: '1', y: '2', fill: 'red', stroke: 'blue', 'stroke-width': '2' }, 'A & B',
+      new CoordinateTransform(2, 3, 4, 5),
+    )
+    expect(text.toSvg(0)).toBe(
+      '<text id="t" x="6" y="11" fill="red" stroke="blue" stroke-width="2">A &amp; B</text>',
     )
   })
 })

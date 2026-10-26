@@ -1,6 +1,7 @@
 import { attrNumber, formatNumber } from '../num'
 import { type AttrSetter, escapeXml, numberAttr, Shape } from '../base/Shape'
 import { numericFromArgs, type ShapeProvider } from '../base/ShapeProvider'
+import { CoordinateTransform } from '../base/CoordinateTransform'
 
 export class Rect extends Shape {
   x: number
@@ -75,13 +76,17 @@ export const rectProvider: ShapeProvider = {
     numericFromArgs(id, args, 'x y w h [fill]', ['x', 'y', 'width', 'height'], 'fill', ns => {
       return new Rect(id, ns[0], ns[1], ns[2], ns[3])
     }),
-  fromAttrs(id, attrs) {
+  fromAttrs(id, attrs, _text, transform = new CoordinateTransform()) {
+    const x = attrNumber(attrs['x'])
+    const y = attrNumber(attrs['y'])
+    const width = attrNumber(attrs['width'])
+    const height = attrNumber(attrs['height'])
     const shape = new Rect(
       id,
-      attrNumber(attrs['x']),
-      attrNumber(attrs['y']),
-      attrNumber(attrs['width']),
-      attrNumber(attrs['height']),
+      Math.min(transform.x(x), transform.x(x + width)),
+      Math.min(transform.y(y), transform.y(y + height)),
+      transform.width(width),
+      transform.height(height),
     )
     shape.applyCommonAttrs(attrs)
     return shape

@@ -2,6 +2,7 @@ import { attrNumber, formatNumber } from '../num'
 import { type AttrSetter, escapeXml, numberAttr, Shape, stringAttr } from '../base/Shape'
 import { numsOr, type ShapeProvider } from '../base/ShapeProvider'
 import { Err, InvalidArgumentsError, Ok } from '../../errors'
+import { CoordinateTransform } from '../base/CoordinateTransform'
 
 export class Text extends Shape {
   x: number
@@ -83,7 +84,14 @@ export const textProvider: ShapeProvider = {
     if (!nums.ok) return nums
     return Ok(new Text(id, nums.value[0], nums.value[1], args[2]!))
   },
-  fromAttrs(id, attrs, textContent) {
-    return new Text(id, attrNumber(attrs['x']), attrNumber(attrs['y']), textContent ?? '')
+  fromAttrs(id, attrs, textContent, transform = new CoordinateTransform()) {
+    const text = new Text(
+      id,
+      transform.x(attrNumber(attrs['x'])),
+      transform.y(attrNumber(attrs['y'])),
+      textContent ?? '',
+    )
+    text.applyCommonAttrs(attrs)
+    return text
   },
 }
