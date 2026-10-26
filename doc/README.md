@@ -37,3 +37,4 @@
 - 2026-10-27 SVG 真实读取（ADR-0007）：`io/SvgReader`、`SvgIds`、`SvgTransform` 接入 FileIoBackend，新增 @xmldom/xmldom 0.9.12。保留显式 id 后补号/重名；展开嵌套变换和 viewBox，未知元素跳过并警告；新增 CannotReadFileError，删除读取过渡桩及规格行。33 项真实文件测试与 typecheck 通过，双轴复审的问题已修正。
 - 2026-10-27 会话验收：新增 `tests/cli/transcript.test.ts`，通过 Node 的 `--import tsx` 启动真实组合根，逐字核验作业完整会话和两节点流程图。全量 167 项测试、typecheck、diff 检查通过。
 - 2026-10-27 测试依赖维护：Vitest 3.2.7 升至 4.1.12，移除 tinypool 依赖；测试源码保持不变，167 项测试、typecheck 通过，完整依赖审计为 0 告警。
+- 2026-10-27 环境约定：版本来源与安装策略见 [开发与验证](development.md)，AGENTS.md 同步完整 REPL 的运行说明。在声明的 Node/npm 基线下，锁文件安装保持清单与锁文件不变，167 项测试、typecheck 与依赖审计通过。

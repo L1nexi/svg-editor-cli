@@ -39,8 +39,9 @@
 
 ## 构建与运行
 
-- `npm install`：安装依赖（首次）
-- `npm run cli`：启动 REPL（当前为占位入口，REPL 未实现；作业 L329 的入口约定）
+- Node/npm 版本、锁文件与安装策略见 [`doc/development.md`](doc/development.md)；切换环境或更新依赖时按该文档验证。
+- `npm ci`：按已提交的锁文件安装依赖（首次检出及验收）
+- `npm run cli`：启动完整 REPL，输入 `help` 查看命令，输入结束时退出
 - `npm test` / `npm run test:watch`：Vitest（ADR-0003）
 - `npm run typecheck`：tsc --noEmit（strict 全开）
 
