@@ -66,6 +66,7 @@
 
 - 语义：读入 SVG 为当前文档 （L167）；缺 id 元素按「标签名+序号」自动补号并警告，序号按标签名独立计数 （L143）；重复 id 改名为「原名+\_2、\_3…首个空闲后缀」并警告（Q5，**P**）；`<g transform>` 展开 translate/scale 进子孙坐标，其余变体警告降级（ADR-0002 决策二），降级警告 `warning: ignored unsupported transform on <id>` **P**。
 - 警告：`warning: assigned id rect1 to unnamed <rect>`（L143、L385）；重复 id 变体 `warning: renamed duplicate id r1 to r1_2` **P**。
+- 读取边界 **P**（ADR-0007）：先保留全部显式 id，再补缺号与重名后缀；未知元素及其子树跳过，警告 `warning: skipped unsupported element <tag>`。支持 translate/scale 序列及嵌套，非等比缩放的 circle 转为同 id ellipse；含不支持或非法操作的整条 transform 忽略并警告，父变换仍生效。text 仅变换位置。根尺寸支持正数/px，缺失时取 viewBox 尺寸或默认值；viewBox 按默认居中等比适配或 preserveAspectRatio 处理。XML 损坏、非 SVG 根及非法画布尺寸均报 cannot read file。
 - forward：`read other.svg (7 elements)`（L386）；警告行先于 forward （L384–L386）。
 - 失败：`error: cannot read file: a.svg`（L245）。
 
@@ -223,3 +224,4 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 - 2026-10-25 v1.1：ungroup 目标为叶子复用 `not a container`（L239，同日裁决）；group / addto 环触发条件按原文表意精化；补 unknown command 与空行两条 P（作业未规定）。
 - 2026-10-25 v1.2：group 语义补「新容器挂画布根 P」与「去重后不足 2 仍执行 P」；撤回 ungroup forward 的 `moved to svg` 变体（根级容器被 L243 拒绝，无可达触发状态）；create 的 `in` 尾缀判定与退化 corner 留痕 P。
 - 2026-10-27 v1.3：分词细则三条 P（引号任意位置开合、未闭合按行尾闭合、前导空白 `#` 同为注释）；补 io 过渡桩 P 行（save 随 cli 批次落地真实现，load 留 io 批次，桩文案届时移除）。
+- 2026-10-27 v1.4：ADR-0007 细化 SVG 读取的 id 保留、未知元素警告、坐标展开、根尺寸与读取失败边界；过渡桩行随真实实现移除。
