@@ -6,9 +6,9 @@ import {
   CannotUngroupCompositeError,
   CannotUngroupTopLevelError,
   CannotWriteFileError,
+  CannotReadFileError,
   IdExistsError,
   InvalidArgumentsError,
-  IoNotImplementedError,
   NoSuchContainerError,
   NoSuchShapeError,
   NotAContainerError,
@@ -41,8 +41,8 @@ describe('错误对象自 format', () => {
     expect(new CannotWriteFileError('a.svg').format()).toBe('error: cannot write file: a.svg')
   })
 
-  it('read 过渡桩：spec 提案，逐字断言', () => {
-    expect(new IoNotImplementedError().format()).toBe('error: io not implemented: read')
+  it('文件不可读：spec 锚定，逐字断言', () => {
+    expect(new CannotReadFileError('a.svg').format()).toBe('error: cannot read file: a.svg')
   })
 
   it('引擎语义类：九条锚定文案逐字断言', () => {

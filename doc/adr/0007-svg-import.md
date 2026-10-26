@@ -17,12 +17,14 @@
 - `ShapeProvider.fromAttrs` 增加可选的末位 `CoordinateTransform`，默认恒等变换。各类型负责自己的几何属性；矩形反射后取包围框，圆经非等比缩放读为同 id 椭圆。text 仅变换位置，画笔属性原样恢复，与当前位置/尺寸模型一致。
 - 新增 `io/SvgTransform`，解析 `translate(dx[,dy])`、`scale(sx[,sy])` 及其序列，按 SVG 的矩阵顺序与父变换合成。该处识别变换语法，不按图形标签分派。
 - 嵌套容器的变换传给子孙，保存时仍无 transform。包含不支持或不合法操作的整条 transform 忽略并按既有文案警告，父变换继续生效。
+- 根 transform 作用在 viewBox 映射外层，即 R×V；preserveAspectRatio 的 none 忽略可选 meet/slice，接受 defer 前缀。依据 [SVG 2 坐标规范](https://www.w3.org/TR/SVG2/coords.html#ViewBoxAttribute)。
 
 ## 输入范围与错误
 
 - 支持六种内置图形、SVG 命名空间及无命名空间的 SVG；注释和 XML 声明不生成图形。
 - 根尺寸支持正数和 px 后缀；缺失时取 viewBox 的尺寸，再缺失用 800×600。viewBox 的坐标映射作为根变换处理，默认居中等比适配，也支持 `preserveAspectRatio="none"`。
 - 未支持的元素按 `warning: skipped unsupported element <tag>` 提示并跳过子树。此为规格新增 P 文案，写入规格后实施。
+- 叶子只读取直接文本与 CDATA；内部的元素子树跳过并警告，防止 textContent 把未支持的 tspan 等内容一并导入。
 - XML 解析使用 `@xmldom/xmldom` 的 `onWarningStopParsing`，拒绝解析器自动修复的输入。只捕获文件异常与解析异常，内部类型提供者的编程错误继续抛出。
 - 当前 `IoNotImplementedError`、其错误测试与规格过渡行在真实读取接入时一同移除，新增 `CannotReadFileError` 及逐字文案断言。
 

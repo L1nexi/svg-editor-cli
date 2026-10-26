@@ -1,15 +1,21 @@
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { Err, Ok, type Result } from '../errors'
 import { CannotWriteFileError } from '../errors/io/CannotWriteFileError'
-import { IoNotImplementedError } from '../errors/io/IoNotImplementedError'
+import { CannotReadFileError } from '../errors/io/CannotReadFileError'
 import type { Canvas } from '../types/Canvas'
 import type { IoBackend } from './IoBackend'
+import { SvgReader } from './SvgReader'
 
-// IoBackend 首个真实现（ADR-0004 决策二）：save 为纯落盘（svg 串已由命令侧备好）；
-// load 的 @xmldom 解析（缺 id 补号、Q5 改名、transform 展开）随 io 批次接入，当前为过渡桩
+// 文件边界（ADR-0007）：读取失败转错误对象，XML 与图形构建委托 SvgReader。
 export class FileIoBackend implements IoBackend {
-  loadDocument(_path: string): Result<{ canvas: Canvas; warnings: string[] }> {
-    return Err(new IoNotImplementedError())
+  loadDocument(path: string): Result<{ canvas: Canvas; warnings: string[] }> {
+    let source: string
+    try {
+      source = readFileSync(path, 'utf8')
+    } catch {
+      return Err(new CannotReadFileError(path))
+    }
+    return SvgReader.read(source, path)
   }
 
   saveDocument(path: string, svg: string): Result<void> {

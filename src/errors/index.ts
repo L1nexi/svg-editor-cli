@@ -20,4 +20,4 @@ export { CannotUngroupCompositeError } from "./hierarchy/CannotUngroupCompositeE
 export { CannotGroupIntoDescendantError } from "./hierarchy/CannotGroupIntoDescendantError";
 export { CannotUngroupTopLevelError } from "./hierarchy/CannotUngroupTopLevelError";
 export { CannotWriteFileError } from "./io/CannotWriteFileError";
-export { IoNotImplementedError } from "./io/IoNotImplementedError";
+export { CannotReadFileError } from "./io/CannotReadFileError";

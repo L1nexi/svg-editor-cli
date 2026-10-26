@@ -15,3 +15,20 @@
 - 每个类型在自身提供者中解释几何属性；非等比缩放的圆转为同 id 椭圆，矩形反射后采用正尺寸包围框。没有新增按图形标签分派。
 - 发现并修复 text 的 fromAttrs 原先漏恢复画笔属性，补齐 fill、stroke、stroke-width 的读取。
 - 图形测试 29 项、typecheck 通过。文件读取与 XML 导入将在下一步接入。
+
+## 第二步：真实文件读取
+
+- FileIoBackend 读 UTF-8 文件，SvgReader 严格解析 XML 后构建画布；SvgIds 保留显式 id 后补号及重名，SvgTransform 解析 translate/scale 序列。支持嵌套、反射、非等比缩放、viewBox 和 SVG 命名空间。
+- 未知元素跳过子树并警告，data-kind 未加载时按普通 g 导入；缺失和重复 id 的警告在解析现场产生。读取失败保持当前文档与撤销重做历史。
+- 删除 IoNotImplementedError、其测试和规格过渡行，增加 CannotReadFileError 的逐字文案断言。
+- 33 项真实文件测试与 typecheck 通过；测试包含作业 other.svg、六类型读写往返、文本及画笔属性、补号重名、变换、XML/文件错误和失败无副作用。
+
+## 双轴审查与纠正
+
+规范轴初审与增量复审均无发现。规格轴初审发现三项，已修复并由同一审查代理独立复验：
+
+1. P2：根 transform 与 viewBox 顺序错误，V×R 会把根平移量再次缩放；改为 R×V。
+2. P2：textContent 会带入未知子元素的内容且没有警告；改为仅收直接文本/CDATA，元素子树跳过并警告。
+3. P3：合法的 none meet、none slice 被误判为读取失败；统一解析 defer、none 和可选缩放模式。
+
+六条新增回归分别覆盖这些情形。规范轴和规格轴最终均通过，未发现新增问题。

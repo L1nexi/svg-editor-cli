@@ -1,6 +1,6 @@
 # 命令行为规范（commands spec）
 
-- **状态**：v1（2026-10-25），随 [ADR-0004](../adr/0004-command-layer.md) 立表；command 模块施工的唯一行为依据。代码与本表冲突时修代码，或先改本表留痕。
+- **状态**：v1.4（2026-10-27），随 [ADR-0004](../adr/0004-command-layer.md) 立表；命令行为的唯一依据。代码与本表冲突时修代码，或先改本表留痕。
 - **标注约定**：**锚定** = 作业原文逐字（附 `doc/assignment/phase_cli_1.md` 行号，正文里的行号引用即锚定标记）；**P** = 提案文案（作业未规定，本项目补定的基线）。打磨提案 = 先改本表再改代码。
 - 术语：链首 / 当前位置 / 边，见 ADR-0004 决策四。
 
@@ -214,7 +214,6 @@ fill / stroke 省略时不写入该属性（渲染默认 fill=black、stroke=non
 | `error: invalid value for <attr>: <value>`                             | P    | set 数值属性非数值；init/canvas 尺寸非正                                     |
 | `error: no save path: document came from init`                         | P    | save 无参且文档来自 init（Q3）                                               |
 | `error: unknown command: <name>`                                       | P    | 注册表未登记的命令名                                                         |
-| `error: io not implemented: read`                                      | P    | 过渡桩：load 的解析随 io 批次接入，此前 read 必失败（io 批次移除本行）       |
 
 警告侧：`warning: assigned id rect1 to unnamed <rect>` ；重复 id 改名、transform 降级两变体 **P**（§4.1 read）。
 
