@@ -35,7 +35,9 @@ io       SVG 读写；XML 库隔离在此；读入警告作为返回值数据
 errors   全部 error: 文案的目录：错误对象自行 format，一条文案一个类一个测试（C5 审计点）
 ```
 
-依赖方向（无环）：errors 不依赖任何模块；types → errors；io、command → types；engine → types、io、command；cli → command、engine。
+依赖方向（无环）：errors 不依赖任何模块；types → errors；io、command → types；engine → types、io、command；cli → command、engine、errors。
+
+- 2026-10-27 修订：cli 补列 errors。Repl 展示执行结果需判别失败分支，`Result` 类型自 errors 直引；errors 是最底层公共依赖，允许各层引用。发现于交付文档一致性自查（doc/README.md）。
 
 - 校验链：cli 语法错 → command 参数校验 → engine 语义校验（id 存在性、容器合法性、scale 正数）。多错误叠加按链条顺序报第一条。
 - 工厂是 L155 允许的第二处分派（类型名 → 类），注册制，6 个内置类型自注册；ShapeProvider 接口形状现在定义，外部加载不做（作业 §4.4 为插件化阶段目标）。
